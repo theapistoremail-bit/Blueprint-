@@ -1,0 +1,47 @@
+// /api/openai-image.js
+// Proxy hacia DALL·E 3 (OpenAI). La key vive en la variable de entorno OPENAPIKEY de Vercel.
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+
+  const apiKey = process.env.OPENAPIKEY;
+  if (!apiKey) {
+    res.status(500).json({ error: "Falta configurar OPENAPIKEY en Vercel" });
+    return;
+  }
+
+  const { prompt } = req.body || {};
+  if (!prompt) {
+    res.status(400).json({ error: "Falta el prompt" });
+    return;
+  }
+
+  try {
+    const upstream = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + apiKey,
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        response_format: "b64_json",
+      }),
+    });
+
+    const data = await upstream.json();
+    if (!upstream.ok) {
+      res.status(upstream.status).json({ error: data?.error?.message || "Error de OpenAI" });
+      return;
+    }
+
+    res.status(200).json({ url: "data:image/png;base64," + data.data[0].b64_json });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || "Error de red hacia OpenAI" });
+  }
+}
