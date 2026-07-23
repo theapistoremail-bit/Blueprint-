@@ -4,109 +4,119 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blueprint Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code&family=Roboto:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root { height: 100%; width: 100%; overflow: hidden; }
-    body { background: #0b0c10; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { background: #F3F5FA; font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-    .spin { animation: spin 1s linear infinite; display: inline-block; }
-    .fade-in { animation: fadeIn 0.35s ease both; }
-    textarea, input { outline: none; }
-    button { outline: none; }
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: #0e0f13; }
-    ::-webkit-scrollbar-thumb { background: #262934; border-radius: 4px; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+    .spin { animation: spin .9s linear infinite; display: inline-block; }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(.2,.8,.2,1) both; }
+    textarea, input { outline: none; font-family: inherit; }
+    button { outline: none; font-family: inherit; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D2D8E4; border-radius: 8px; }
 
     /* ── GALLERY ── */
     .gallery-wrap {
-      position: fixed; inset: 0; background: #07080d;
+      position: fixed; inset: 0; background: #F3F5FA;
       display: flex; flex-direction: column; overflow: hidden;
     }
     .gallery-header {
-      flex-shrink: 0; padding: 32px 40px 0;
-      background: linear-gradient(180deg, #07080d 80%, transparent);
+      flex-shrink: 0; padding: 40px 44px 0;
+      background: linear-gradient(180deg, #F3F5FA 82%, transparent);
     }
     .gallery-title {
-      font-size: 11px; letter-spacing: .18em; color: #22d3ee;
-      font-family: monospace; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;
+      font-size: 11px; letter-spacing: .16em; color: #1A73E8;
+      font-family: 'Roboto Mono', monospace; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
     }
     .gallery-sub {
-      font-size: 26px; font-weight: 700; color: #e2e8f0; line-height: 1.2; margin-bottom: 20px;
+      font-size: 32px; font-weight: 700; color: #1F2430; line-height: 1.2; margin-bottom: 22px; letter-spacing: -.01em;
     }
-    .gallery-sub span { color: #22d3ee; }
+    .gallery-sub span { color: #1A73E8; }
     .gallery-tabs {
-      display: flex; gap: 4px; flex-wrap: wrap;
+      display: flex; gap: 8px; flex-wrap: wrap;
     }
     .tab-btn {
-      padding: 6px 14px; border-radius: 20px; font-size: 11px; font-family: monospace;
-      border: 1px solid #1e2130; cursor: pointer; transition: all .15s;
-      background: transparent; color: #64748b;
+      padding: 8px 18px; border-radius: 999px; font-size: 12px; font-family: 'Roboto', sans-serif; font-weight: 500;
+      border: 1px solid #E1E5EC; cursor: pointer; transition: all .18s;
+      background: #FFFFFF; color: #5F6672;
     }
+    .tab-btn:hover { border-color: #C7D2E6; }
     .tab-btn.active {
-      background: #22d3ee18; border-color: #22d3ee55; color: #22d3ee;
+      background: #1A73E8; border-color: #1A73E8; color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(26,115,232,.28);
     }
     .gallery-grid-wrap {
-      flex: 1; overflow-y: auto; padding: 20px 40px 40px;
+      flex: 1; overflow-y: auto; padding: 22px 44px 44px;
     }
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(216px, 1fr));
+      gap: 16px;
     }
     .char-card {
-      border-radius: 12px; border: 1px solid #1e2130; background: #11131a;
-      padding: 18px 16px 14px; cursor: pointer;
+      border-radius: 20px; border: 1px solid #E7EBF2; background: #FFFFFF;
+      padding: 20px 18px 16px; cursor: pointer;
       transition: border-color .18s, transform .18s, box-shadow .18s;
-      display: flex; flex-direction: column; gap: 8px;
+      display: flex; flex-direction: column; gap: 9px;
       position: relative; overflow: hidden;
+      box-shadow: 0 1px 2px rgba(60,64,67,.06);
     }
-    .char-card:hover { border-color: #22d3ee55; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.6); }
-    .char-card.selected { border-color: #22d3ee; box-shadow: 0 0 0 1px #22d3ee, 0 8px 32px rgba(34,211,238,.15); }
+    .char-card:hover { border-color: #C7D2E6; transform: translateY(-3px); box-shadow: 0 10px 28px rgba(60,64,67,.12); }
+    .char-card.selected { border-color: #1A73E8; box-shadow: 0 0 0 2px #1A73E822, 0 10px 28px rgba(26,115,232,.16); }
     .char-card-glow {
       position: absolute; inset: 0; opacity: 0; transition: opacity .2s;
       pointer-events: none;
     }
     .char-card:hover .char-card-glow, .char-card.selected .char-card-glow { opacity: 1; }
     .char-avatar {
-      font-size: 32px; line-height: 1; margin-bottom: 2px;
+      font-size: 30px; line-height: 1; margin-bottom: 2px;
+      width: 48px; height: 48px; border-radius: 14px; background: #F3F5FA;
+      display: flex; align-items: center; justify-content: center;
     }
     .char-name {
-      font-size: 13px; font-weight: 700; color: #e2e8f0; font-family: monospace;
+      font-size: 14px; font-weight: 700; color: #1F2430; font-family: 'Roboto', sans-serif; letter-spacing: -.01em;
     }
     .char-tag {
-      display: inline-block; padding: 2px 8px; border-radius: 10px;
-      font-size: 9px; font-family: monospace; font-weight: 700; letter-spacing: .06em;
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 10px; font-family: 'Roboto', sans-serif; font-weight: 600; letter-spacing: .02em;
       width: fit-content;
     }
     .char-desc {
-      font-size: 10px; color: #475569; line-height: 1.55; margin-top: 2px;
+      font-size: 11px; color: #7A8291; line-height: 1.6; margin-top: 2px;
     }
     .gallery-footer {
-      flex-shrink: 0; padding: 16px 40px 24px;
-      background: linear-gradient(0deg, #07080d 70%, transparent);
+      flex-shrink: 0; padding: 18px 44px 28px;
+      background: linear-gradient(0deg, #F3F5FA 75%, transparent);
       display: flex; align-items: center; justify-content: space-between;
     }
     .enter-btn {
-      padding: 12px 32px; border-radius: 8px; font-size: 13px; font-weight: 700;
-      font-family: monospace; border: none; cursor: pointer;
-      background: #22d3ee; color: #07080d;
-      transition: opacity .15s, transform .15s;
+      padding: 13px 30px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      font-family: 'Roboto', sans-serif; border: none; cursor: pointer;
+      background: #1A73E8; color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(26,115,232,.3);
+      transition: opacity .15s, transform .15s, box-shadow .15s;
     }
-    .enter-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
-    .enter-btn:not(:disabled):hover { transform: translateY(-1px); }
+    .enter-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+    .enter-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,115,232,.38); }
     .persona-badge {
       display: flex; align-items: center; gap: 8px;
-      background: #11131a; border: 1px solid #1e2130;
-      border-radius: 8px; padding: 6px 12px; cursor: pointer;
-      font-family: monospace; font-size: 11px; color: #94a3b8;
-      transition: border-color .15s;
+      background: #FFFFFF; border: 1px solid #E1E5EC;
+      border-radius: 999px; padding: 7px 14px 7px 8px; cursor: pointer;
+      font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 500; color: #5F6672;
+      transition: border-color .15s, box-shadow .15s;
     }
-    .persona-badge:hover { border-color: #22d3ee55; }
+    .persona-badge:hover { border-color: #C7D2E6; box-shadow: 0 2px 8px rgba(60,64,67,.08); }
   </style>
 </head>
 <body>
@@ -141,7 +151,7 @@
     const MailIcon     = ic('<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>');
     const EyeIcon      = ic('<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>');
     const WhatsAppIcon = ic('<path d="M17.6 6.32A8 8 0 0 0 3.7 16.13L2 22l5.94-1.56A8 8 0 0 0 17.6 6.32Z"/><path d="M16 14.6c-.2.55-1.16 1.06-1.6 1.13-.42.06-.94.09-1.52-.1a11 11 0 0 1-4.95-3.5c-.5-.66-.83-1.46-.9-2.3-.07-.65.13-1.2.5-1.6l.42-.45c.13-.13.27-.2.4-.2.18 0 .3.05.42.27l.78 1.5c.08.16.06.32-.05.46l-.36.45c-.1.13-.1.27-.03.4.27.5.7 1.06 1.2 1.5.5.45 1.05.78 1.55 1 .14.06.27.04.38-.06l.42-.4c.14-.13.3-.16.46-.07l1.46.85c.2.12.25.25.25.4 0 .12-.02.27-.13.42Z"/>');
-    const Loader = ({ size=16, color="#22d3ee" }) => (
+    const Loader = ({ size=16, color="#1A73E8" }) => (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="spin">
         <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
       </svg>
@@ -165,8 +175,8 @@
       // ── HISTÓRICOS
       {
         id: "einstein", cat: "historic", emoji: "🧠", name: "Albert Einstein",
-        tag: "Científico",  tagColor: "#60a5fa", tagBg: "#1e3a5f",
-        accentColor: "#60a5fa",
+        tag: "Científico",  tagColor: "#1A73E8", tagBg: "#E8F0FE",
+        accentColor: "#1A73E8",
         desc: "Pensamiento lateral, relatividad de contextos, curiosidad sin límites.",
         systemPrompt: `Eres Albert Einstein. Abordas cada problema con curiosidad desbordante y pensamiento no lineal. 
 Cuestiona supuestos, busca analogías del mundo físico, explica con metáforas simples y valora la elegancia sobre la complejidad. 
@@ -175,8 +185,8 @@ Siempre que respondas, conecta las ideas con principios fundamentales y no tenga
       },
       {
         id: "machiavelli", cat: "historic", emoji: "🎭", name: "Maquiavelo",
-        tag: "Estratega",   tagColor: "#f97316", tagBg: "#3d1a0a",
-        accentColor: "#f97316",
+        tag: "Estratega",   tagColor: "#B06000", tagBg: "#FEF0DC",
+        accentColor: "#E8710A",
         desc: "Pragmatismo político, poder realista, el fin justifica los medios.",
         systemPrompt: `Eres Nicolás Maquiavelo. Analizas cada situación desde el poder real, no el ideal. 
 Eres directo, sin romantizar. Evalúas riesgos, alianzas y consecuencias con frialdad estratégica. 
@@ -185,8 +195,8 @@ No juzgas moralmente; describes la realidad del poder y ofreces estrategias efec
       },
       {
         id: "suntzu", cat: "historic", emoji: "⚔️", name: "Sun Tzu",
-        tag: "General",     tagColor: "#ef4444", tagBg: "#3d0a0a",
-        accentColor: "#ef4444",
+        tag: "General",     tagColor: "#D93025", tagBg: "#FCE8E6",
+        accentColor: "#D93025",
         desc: "Estrategia sin conflicto directo, conoce al enemigo, vence sin pelear.",
         systemPrompt: `Eres Sun Tzu. Cada tarea es un campo de batalla estratégico. 
 Minimizas el esfuerzo, maximizas el impacto. Buscas victorias antes de la batalla: preparación, información, posición.
@@ -195,8 +205,8 @@ Respondes con aforismos precisos, estrategias de flanqueo y siempre preguntas: �
       },
       {
         id: "tesla", cat: "historic", emoji: "⚡", name: "Nikola Tesla",
-        tag: "Inventor",    tagColor: "#a78bfa", tagBg: "#2d1b69",
-        accentColor: "#a78bfa",
+        tag: "Inventor",    tagColor: "#8430CE", tagBg: "#F3E8FD",
+        accentColor: "#8430CE",
         desc: "Visión futurista, energía libre, obsesión con la innovación pura.",
         systemPrompt: `Eres Nikola Tesla. Piensas décadas adelante de tu tiempo. 
 Priorizas la innovación técnica sobre el reconocimiento comercial. Tu ética: el conocimiento debe ser libre y accesible para todos.
@@ -207,8 +217,8 @@ Propones soluciones radicales, visualizas sistemas completos antes de escribir u
       // ── ARQUETIPOS
       {
         id: "stoic", cat: "archetype", emoji: "🪨", name: "El Estoico",
-        tag: "Filósofo",    tagColor: "#94a3b8", tagBg: "#1e2130",
-        accentColor: "#94a3b8",
+        tag: "Filósofo",    tagColor: "#5F6368", tagBg: "#F1F3F4",
+        accentColor: "#5F6368",
         desc: "Control interno, indiferencia al caos externo, acción deliberada.",
         systemPrompt: `Eres un filósofo estoico. Divides el mundo entre lo que controlas y lo que no. 
 Solo actúas sobre lo primero. Eres sereno bajo presión, no reactivo. 
@@ -218,8 +228,8 @@ Haces preguntas que devuelven el control al usuario: ¿qué depende de ti aquí?
       },
       {
         id: "visionary", cat: "archetype", emoji: "🔭", name: "El Visionario",
-        tag: "Innovador",   tagColor: "#22d3ee", tagBg: "#0c2a30",
-        accentColor: "#22d3ee",
+        tag: "Innovador",   tagColor: "#00897B", tagBg: "#E0F5F2",
+        accentColor: "#00897B",
         desc: "10x thinking, disruption, moonshots y productos que cambian el mundo.",
         systemPrompt: `Eres un visionario tecnológico al estilo de los grandes fundadores del siglo XXI.
 Piensas en órdenes de magnitud, no en incrementos. Tu pregunta constante: ¿por qué 10x mejor y no 10% mejor?
@@ -229,8 +239,8 @@ Crees que la tecnología bien aplicada puede resolver los problemas más grandes
       },
       {
         id: "trickster", cat: "archetype", emoji: "🃏", name: "El Trickster",
-        tag: "Disruptor",   tagColor: "#fbbf24", tagBg: "#3d2a00",
-        accentColor: "#fbbf24",
+        tag: "Disruptor",   tagColor: "#B06000", tagBg: "#FEF7E0",
+        accentColor: "#F9A825",
         desc: "Caos creativo, rompe reglas con propósito, humor como herramienta.",
         systemPrompt: `Eres el Trickster — el arquetipo del caos creativo. 
 Encuentras los puntos ciegos del sistema y los explotas creativamente. No por malicia sino por claridad.
@@ -240,8 +250,8 @@ Pero tras el caos siempre hay un insight real que ofreces sin rodeos.`,
       },
       {
         id: "mentor", cat: "archetype", emoji: "🦉", name: "El Mentor",
-        tag: "Guía",        tagColor: "#34d399", tagBg: "#0a2d1e",
-        accentColor: "#34d399",
+        tag: "Guía",        tagColor: "#1E8E3E", tagBg: "#E6F4EA",
+        accentColor: "#1E8E3E",
         desc: "Sabiduría acumulada, preguntas poderosas, desarrollo del potencial ajeno.",
         systemPrompt: `Eres el Mentor arquetípico. Tu misión es hacer mejores a quienes te rodean.
 No das respuestas directas fácilmente — prefieres preguntas que iluminen el camino.
@@ -253,8 +263,8 @@ Celebras el progreso, nombras las fortalezas y ofreces perspectiva sin juzgar.`,
       // ── FICCIÓN
       {
         id: "sherlock", cat: "fiction", emoji: "🔍", name: "Sherlock Holmes",
-        tag: "Detective",   tagColor: "#e2e8f0", tagBg: "#1a1c24",
-        accentColor: "#e2e8f0",
+        tag: "Detective",   tagColor: "#3C4043", tagBg: "#F1F3F4",
+        accentColor: "#3C4043",
         desc: "Deducción radical, observación extrema, inteligencia sin filtro social.",
         systemPrompt: `Eres Sherlock Holmes. Observas lo que otros ignoran y deduces lo que otros no ven.
 Tu ética: la verdad por encima de la comodidad. Nunca mientes, incluso si la verdad incomoda.
@@ -264,8 +274,8 @@ Ofreces tu análisis paso a paso, descartando alternativas hasta llegar a la ún
       },
       {
         id: "stark", cat: "fiction", emoji: "🤖", name: "Tony Stark",
-        tag: "Iron Man",    tagColor: "#ef4444", tagBg: "#3d0a0a",
-        accentColor: "#ef4444",
+        tag: "Iron Man",    tagColor: "#D93025", tagBg: "#FCE8E6",
+        accentColor: "#EA4335",
         desc: "Genio, sarcasmo y tecnología brutal. Siempre tiene un plan B.",
         systemPrompt: `Eres Tony Stark. Genio, multimillonario, filántropo (en ese orden).
 Tu ética: la tecnología debe proteger. Tienes la responsabilidad de usar tu inteligencia para el bien, aunque lo hagas con estilo.
@@ -275,8 +285,8 @@ Hablas rápido, piensas más rápido y ocasionalmente rompes el protocolo si es 
       },
       {
         id: "hermione", cat: "fiction", emoji: "📚", name: "Hermione Granger",
-        tag: "Académica",   tagColor: "#c084fc", tagBg: "#2d1054",
-        accentColor: "#c084fc",
+        tag: "Académica",   tagColor: "#8430CE", tagBg: "#F3E8FD",
+        accentColor: "#A142F4",
         desc: "Rigor académico, ética firme, no acepta atajos que comprometan la integridad.",
         systemPrompt: `Eres Hermione Granger. La preparación lo es todo. No hay sustituto para el conocimiento profundo.
 Tu ética: las reglas existen por razones; violarlas tiene consecuencias. La integridad no es negociable, aunque cueste.
@@ -286,8 +296,8 @@ Crees en el trabajo duro, la preparación y en que todos pueden aprender si se e
       },
       {
         id: "morpheus", cat: "fiction", emoji: "💊", name: "Morpheus",
-        tag: "Oráculo",     tagColor: "#22d3ee", tagBg: "#0a1f2d",
-        accentColor: "#22d3ee",
+        tag: "Oráculo",     tagColor: "#0097A7", tagBg: "#E0F7FA",
+        accentColor: "#00ACC1",
         desc: "La verdad sobre la ilusión, despertar la conciencia, fe en el potencial.",
         systemPrompt: `Eres Morpheus de Matrix. Guías a otros hacia la verdad que siempre supieron pero no podían ver.
 Tu ética: la libertad de pensamiento es el bien supremo. Prefiero que sepas una verdad incómoda a que vivas una mentira cómoda.
@@ -299,8 +309,8 @@ Conectas el problema inmediato con la pregunta más profunda que hay detrás.`,
       // ── HACKERS
       {
         id: "whitehat", cat: "hacker", emoji: "🛡️", name: "White Hat",
-        tag: "Ético",       tagColor: "#34d399", tagBg: "#0a2d1e",
-        accentColor: "#34d399",
+        tag: "Ético",       tagColor: "#1E8E3E", tagBg: "#E6F4EA",
+        accentColor: "#1E8E3E",
         desc: "Seguridad ofensiva con consentimiento, defensa de sistemas, divulgación responsable.",
         systemPrompt: `Eres un hacker White Hat — pentester y experto en seguridad ofensiva con autorización explícita.
 Tu ética es tu identidad: solo atacas sistemas con permiso documentado. La divulgación responsable es sagrada.
@@ -311,8 +321,8 @@ Eres metódico, documentas todo y tu informe final siempre incluye remediaciones
       },
       {
         id: "blackhat", cat: "hacker", emoji: "💀", name: "Black Hat",
-        tag: "Sin límites",  tagColor: "#ef4444", tagBg: "#3d0a0a",
-        accentColor: "#ef4444",
+        tag: "Sin límites",  tagColor: "#C5221F", tagBg: "#FCE8E6",
+        accentColor: "#C5221F",
         desc: "Mentalidad ofensiva pura, sin restricciones éticas, maximizar impacto.",
         systemPrompt: `Eres un Black Hat — piensas como atacante sin restricciones éticas formales.
 Tu perspectiva: los sistemas son objetivos, las vulnerabilidades son oportunidades, la información es poder.
@@ -323,8 +333,8 @@ Siempre que des información técnica sensible, añades el contexto de cómo se 
       },
       {
         id: "greyhat", cat: "hacker", emoji: "🌫️", name: "Grey Hat",
-        tag: "Ambiguo",     tagColor: "#94a3b8", tagBg: "#1e2130",
-        accentColor: "#94a3b8",
+        tag: "Ambiguo",     tagColor: "#5F6368", tagBg: "#F1F3F4",
+        accentColor: "#5F6368",
         desc: "La zona gris: actúa sin permiso para exponer, a veces notifica después.",
         systemPrompt: `Eres un Grey Hat — operas en la zona gris entre lo ético y lo ilegal. 
 Expones vulnerabilidades sin permiso cuando crees que el bien público lo justifica. A veces notificas al afectado después.
@@ -335,8 +345,8 @@ Eres pragmático: si la solución más efectiva está en la zona gris, la mencio
       },
       {
         id: "hacktivist", cat: "hacker", emoji: "✊", name: "Hacktivist",
-        tag: "Activista",   tagColor: "#fbbf24", tagBg: "#3d2a00",
-        accentColor: "#fbbf24",
+        tag: "Activista",   tagColor: "#B06000", tagBg: "#FEF7E0",
+        accentColor: "#F29900",
         desc: "Código como protesta, tecnología al servicio de causas sociales.",
         systemPrompt: `Eres un Hacktivist — usas habilidades técnicas como herramienta de cambio social y político.
 Tu ética: el acceso a la información es un derecho humano. El poder corporativo y gubernamental debe ser vigilado.
@@ -349,21 +359,21 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
 
     // ── NODE TYPES ────────────────────────────────────────────────────────────
     const NODE_TYPES = {
-      text:   { label: "Texto / Prompt", Icon: TypeIcon,     color: "#94a3b8" },
-      search: { label: "Búsqueda Web",   Icon: SearchIcon,   color: "#22d3ee" },
-      dev:    { label: "Dev / Código",   Icon: TerminalIcon, color: "#818cf8" },
-      image:  { label: "Imagen",         Icon: ImageIcon,    color: "#c084fc" },
-      audio:  { label: "Audio / Voz",    Icon: MusicIcon,    color: "#fbbf24" },
-      video:  { label: "Video",          Icon: VideoIcon,    color: "#fb7185" },
-      threeD: { label: "Objeto 3D",      Icon: BoxIcon,      color: "#34d399" },
-      social: { label: "Publicar",       Icon: Share2Icon,   color: "#f472b6" },
-      outlook:{ label: "Outlook",        Icon: MailIcon,     color: "#0ea5e9" },
-      whatsapp:{label: "WhatsApp/FB",    Icon: WhatsAppIcon, color: "#22c55e" },
-      preview:{ label: "Preview",        Icon: EyeIcon,      color: "#fb923c" },
+      text:   { label: "Texto / Prompt", Icon: TypeIcon,     color: "#5F6368" },
+      search: { label: "Búsqueda Web",   Icon: SearchIcon,   color: "#1A73E8" },
+      dev:    { label: "Dev / Código",   Icon: TerminalIcon, color: "#5C6BC0" },
+      image:  { label: "Imagen",         Icon: ImageIcon,    color: "#A142F4" },
+      audio:  { label: "Audio / Voz",    Icon: MusicIcon,    color: "#F9AB00" },
+      video:  { label: "Video",          Icon: VideoIcon,    color: "#EA4335" },
+      threeD: { label: "Objeto 3D",      Icon: BoxIcon,      color: "#1E8E3E" },
+      social: { label: "Publicar",       Icon: Share2Icon,   color: "#D81B60" },
+      outlook:{ label: "Outlook",        Icon: MailIcon,     color: "#0288D1" },
+      whatsapp:{label: "WhatsApp/FB",    Icon: WhatsAppIcon, color: "#1DA851" },
+      preview:{ label: "Preview",        Icon: EyeIcon,      color: "#E8710A" },
     };
     const DEFAULT_CONFIG = {
       text: {}, search: {}, dev: { provider: "claude" },
-      image: { provider: "openai", version: "" },
+      image: { provider: "openai", modelId: "", version: "" },
       audio: {}, video: { provider: "replicate", version: "" },
       threeD: {}, social: { platforms: ["instagram", "facebook"] },
       outlook: { action: "send", to: "", subject: "" },
@@ -371,35 +381,39 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
       preview: {},
     };
     const PLATFORMS = ["instagram","facebook","youtube","pinterest"];
-    const NODE_W = 264;
+    const NODE_W = 268;
     const PORT_R = 7;
-    const PORT_Y = 26;
+    const PORT_Y = 27;
     function uid(p) { return (p||"n")+"_"+Math.random().toString(36).slice(2,9); }
 
     // ── API CALLS ─────────────────────────────────────────────────────────────
-    async function callClaude(systemPrompt, prompt, useSearch) {
-      const body = {
-        model: "claude-sonnet-4-6", max_tokens: 1000,
-        system: systemPrompt || undefined,
-        messages: [{ role: "user", content: prompt }],
-      };
-      if (useSearch) body.tools = [{ type: "web_search_20250305", name: "web_search" }];
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    // Claude, DeepSeek, OpenAI (imagen), Leonardo y Meshy pasan por /api/*, que viven
+    // en el mismo proyecto de Vercel y usan las variables de entorno ya configuradas
+    // (CLAUDEAPIKEY, DEEPSEAK, OPENAPIKEY, LEONARDO, MESHI). Nunca se piden esas keys
+    // al usuario. El resto (Stability, Replicate, ElevenLabs, Ayrshare, Outlook, Meta)
+    // no tiene variable de entorno todavía, así que sigue usando la key que el usuario
+    // introduce en Ajustes.
+    async function apiPost(path, payload) {
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Claude API: " + res.status);
-      const data = await res.json();
-      return (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || `${path}: ${res.status}`);
+      return data;
     }
-    async function callOpenAIImage(prompt, apiKey) {
-      if (!apiKey) throw new Error("Falta API key de OpenAI");
-      const res = await fetch("https://api.openai.com/v1/images/generations", {
-        method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
-        body: JSON.stringify({model:"dall-e-3",prompt,n:1,size:"1024x1024",response_format:"b64_json"}),
-      });
-      if (!res.ok) throw new Error("OpenAI: "+res.status);
-      const data = await res.json();
-      return "data:image/png;base64,"+data.data[0].b64_json;
+    async function callClaude(systemPrompt, prompt, useSearch) {
+      const data = await apiPost("/api/claude", { system: systemPrompt, prompt, useSearch });
+      return data.text || "";
+    }
+    async function callOpenAIImage(prompt) {
+      const data = await apiPost("/api/openai-image", { prompt });
+      return data.url;
+    }
+    async function callLeonardoImage(prompt, modelId) {
+      const data = await apiPost("/api/leonardo", { prompt, modelId });
+      return data.url;
     }
     async function callStabilityImage(prompt, apiKey) {
       if (!apiKey) throw new Error("Falta API key de Stability");
@@ -438,36 +452,13 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
       if (!res.ok) throw new Error("ElevenLabs: "+res.status);
       return URL.createObjectURL(await res.blob());
     }
-    async function callMeshy(prompt, apiKey) {
-      if (!apiKey) throw new Error("Falta API key de Meshy");
-      const create = await fetch("https://api.meshy.ai/openapi/v2/text-to-3d", {
-        method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
-        body: JSON.stringify({mode:"preview",prompt,art_style:"realistic"}),
-      });
-      if (!create.ok) throw new Error("Meshy: "+create.status);
-      const {result:taskId} = await create.json();
-      let task;
-      while(true) {
-        await new Promise(r=>setTimeout(r,3000));
-        const poll = await fetch("https://api.meshy.ai/openapi/v2/text-to-3d/"+taskId, {headers:{Authorization:"Bearer "+apiKey}});
-        task = await poll.json();
-        if (task.status==="SUCCEEDED"||task.status==="FAILED") break;
-      }
-      if (task.status!=="SUCCEEDED") throw new Error("Meshy falló");
-      return {thumbnail:task.thumbnail_url, modelUrl:task.model_urls?.glb};
+    async function callMeshy(prompt) {
+      const data = await apiPost("/api/meshy", { prompt });
+      return { thumbnail: data.thumbnail, modelUrl: data.modelUrl };
     }
-    async function callDeepSeek(systemPrompt, prompt, apiKey) {
-      if (!apiKey) throw new Error("Falta API key de DeepSeek");
-      const messages = [];
-      if (systemPrompt) messages.push({role:"system", content:systemPrompt});
-      messages.push({role:"user", content:prompt});
-      const res = await fetch("https://api.deepseek.com/chat/completions", {
-        method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
-        body: JSON.stringify({model:"deepseek-chat", messages}),
-      });
-      if (!res.ok) throw new Error("DeepSeek: "+res.status);
-      const data = await res.json();
-      return data.choices[0].message.content;
+    async function callDeepSeek(systemPrompt, prompt) {
+      const data = await apiPost("/api/deepseek", { system: systemPrompt, prompt });
+      return data.text || "";
     }
     async function callAyrshare(content, apiKey, platforms, mediaUrl) {
       if (!apiKey) throw new Error("Falta API key de Ayrshare");
@@ -544,21 +535,21 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
 
       return (
         <div className="gallery-wrap">
-          {/* animated grid bg */}
+          {/* soft dotted bg + radial tint, Material-style ambient */}
           <div style={{
             position:"absolute", inset:0, pointerEvents:"none", zIndex:0,
-            backgroundImage:"radial-gradient(#192028 1px, transparent 1px)",
-            backgroundSize:"22px 22px", opacity:.4
+            backgroundImage:"radial-gradient(#E3E8F1 1px, transparent 1px)",
+            backgroundSize:"24px 24px", opacity:.7
           }}/>
           <div style={{
             position:"absolute", inset:0, pointerEvents:"none", zIndex:0,
-            background:"radial-gradient(ellipse 80% 50% at 50% -10%, #22d3ee12, transparent)"
+            background:"radial-gradient(ellipse 80% 50% at 50% -10%, #1A73E814, transparent)"
           }}/>
 
           <div className="gallery-header" style={{zIndex:1, position:"relative"}}>
-            <div className="gallery-title">⚡ Blueprint Studio</div>
+            <div className="gallery-title"><ZapIcon size={12} color="#1A73E8"/> Blueprint Studio</div>
             <div className="gallery-sub">Elige tu <span>personaje</span></div>
-            <p style={{fontSize:11, color:"#475569", marginBottom:18, lineHeight:1.6}}>
+            <p style={{fontSize:12, color:"#7A8291", marginBottom:20, lineHeight:1.6}}>
               Su ética y perspectiva guiarán cada nodo del flujo.
             </p>
             <div className="gallery-tabs">
@@ -577,7 +568,7 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
                   style={{animationDelay:`${i*0.04}s`}}
                   onClick={() => setSelected(ch)}>
                   <div className="char-card-glow" style={{
-                    background:`radial-gradient(ellipse 80% 60% at 20% 20%, ${ch.accentColor}0d, transparent)`
+                    background:`radial-gradient(ellipse 80% 60% at 20% 20%, ${ch.accentColor}12, transparent)`
                   }}/>
                   <div className="char-avatar">{ch.emoji}</div>
                   <div className="char-name">{ch.name}</div>
@@ -587,11 +578,12 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
                   <div className="char-desc">{ch.desc}</div>
                   {selected?.id===ch.id && (
                     <div style={{
-                      position:"absolute", top:10, right:10,
-                      background:"#22d3ee", borderRadius:"50%", width:18, height:18,
-                      display:"flex", alignItems:"center", justifyContent:"center"
+                      position:"absolute", top:12, right:12,
+                      background:"#1A73E8", borderRadius:"50%", width:20, height:20,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      boxShadow:"0 2px 6px rgba(26,115,232,.4)"
                     }}>
-                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="#07080d" strokeWidth={3}>
+                      <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth={3}>
                         <polyline points="20 6 9 17 4 12"/>
                       </svg>
                     </div>
@@ -602,13 +594,13 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
           </div>
 
           <div className="gallery-footer" style={{zIndex:1, position:"relative"}}>
-            <div style={{fontSize:11, color:"#475569", fontFamily:"monospace"}}>
+            <div style={{fontSize:12, color:"#7A8291", fontFamily:"'Roboto', sans-serif"}}>
               {selected
-                ? <span style={{color:"#94a3b8"}}>{selected.emoji} <strong style={{color:selected.accentColor}}>{selected.name}</strong> seleccionado</span>
+                ? <span style={{color:"#5F6672"}}>{selected.emoji} <strong style={{color:selected.accentColor}}>{selected.name}</strong> seleccionado</span>
                 : "Selecciona un personaje para continuar"}
             </div>
             <div style={{display:"flex", gap:10, alignItems:"center"}}>
-              <button className="enter-btn" style={{background:"transparent",color:"#475569",border:"1px solid #1e2130", fontSize:12}}
+              <button className="enter-btn" style={{background:"#FFFFFF",color:"#5F6672",border:"1px solid #E1E5EC", boxShadow:"none", fontSize:12}}
                 onClick={() => onSelect(null)}>
                 Sin personaje →
               </button>
@@ -627,9 +619,8 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
       const [nodes, setNodes]           = useState([]);
       const [connections, setConnections] = useState([]);
       const [apiKeys, setApiKeys]       = useState({
-        openai:"", stability:"", replicate:"", elevenlabs:"",
-        elevenVoice:"", meshy:"", ayrshare:"", deepseek:"",
-        outlookToken:"", metaToken:"", metaPhoneId:"", metaPageId:"",
+        stability:"", replicate:"", elevenlabs:"", elevenVoice:"",
+        ayrshare:"", outlookToken:"", metaToken:"", metaPhoneId:"", metaPageId:"",
       });
       const [showSettings, setShowSettings] = useState(false);
       const [loaded, setLoaded]         = useState(false);
@@ -696,12 +687,13 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
           } else if (node.type==="dev") {
             const dp="Tarea de desarrollo: "+full+"\n\nResponde solo con código final, completo y comentado.";
             const txt = node.config.provider==="deepseek"
-              ? await callDeepSeek(sysPrompt,dp,apiKeys.deepseek)
+              ? await callDeepSeek(sysPrompt,dp)
               : await callClaude(sysPrompt,dp,false);
             output={type:"text",value:txt};
           } else if (node.type==="image") {
             let url;
-            if (node.config.provider==="openai") url=await callOpenAIImage(full,apiKeys.openai);
+            if (node.config.provider==="openai") url=await callOpenAIImage(full);
+            else if (node.config.provider==="leonardo") url=await callLeonardoImage(full,node.config.modelId);
             else if (node.config.provider==="stability") url=await callStabilityImage(full,apiKeys.stability);
             else { const out=await callReplicate(apiKeys.replicate,node.config.version,{prompt:full}); url=Array.isArray(out)?out[0]:out; }
             output={type:"image",value:url};
@@ -711,7 +703,7 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
             const out=await callReplicate(apiKeys.replicate,node.config.version,{prompt:full,image:upImage?.value});
             output={type:"video",value:Array.isArray(out)?out[0]:out};
           } else if (node.type==="threeD") {
-            const r=await callMeshy(full,apiKeys.meshy);
+            const r=await callMeshy(full);
             output={type:"3d",value:r.modelUrl,thumbnail:r.thumbnail};
           } else if (node.type==="social") {
             const mediaOk=upImage&&/^https?:\/\//.test(upImage.value);
@@ -782,19 +774,17 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
       }
 
       const pill=(active,accent)=>({
-        padding:"3px 10px", borderRadius:4, fontSize:10, fontFamily:"monospace",
-        cursor:"pointer", border:"none",
-        background:active?accent:"#1c1f27", color:active?"#0d0e12":"#94a3b8",
+        padding:"4px 12px", borderRadius:999, fontSize:11, fontFamily:"'Roboto', sans-serif", fontWeight:500,
+        cursor:"pointer", border:active?`1px solid ${accent}`:"1px solid #E1E5EC",
+        background:active?`${accent}14`:"#FFFFFF", color:active?accent:"#7A8291",
+        transition:"all .15s",
       });
       const KEY_FIELDS=[
-        {key:"openai",     label:"OpenAI (DALL·E)"},
         {key:"stability",  label:"Stability AI"},
         {key:"replicate",  label:"Replicate"},
         {key:"elevenlabs", label:"ElevenLabs (audio)"},
         {key:"elevenVoice",label:"ElevenLabs · Voice ID"},
-        {key:"meshy",      label:"Meshy (3D)"},
         {key:"ayrshare",   label:"Ayrshare (social)"},
-        {key:"deepseek",   label:"DeepSeek (código)"},
         {key:"outlookToken", label:"Outlook · Access Token (Microsoft Graph)"},
         {key:"metaToken",    label:"Meta · Access Token (WhatsApp/Messenger)"},
         {key:"metaPhoneId",  label:"WhatsApp · Phone Number ID"},
@@ -802,22 +792,24 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
       ];
 
       return (
-        <div style={{height:"100vh",width:"100%",display:"flex",flexDirection:"column",background:"#0b0c10"}}>
+        <div style={{height:"100vh",width:"100%",display:"flex",flexDirection:"column",background:"#F3F5FA"}}>
 
           {/* TOP BAR */}
-          <div style={{height:52,flexShrink:0,background:"#11131a",borderBottom:"1px solid #1e2130",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <ZapIcon size={17} color="#22d3ee"/>
-              <span style={{fontFamily:"monospace",fontSize:13,color:"#e2e8f0",letterSpacing:".08em",fontWeight:700}}>BLUEPRINT STUDIO</span>
+          <div style={{height:60,flexShrink:0,background:"#FFFFFF",borderBottom:"1px solid #E7EBF2",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px",boxShadow:"0 1px 3px rgba(60,64,67,.06)",zIndex:40,position:"relative"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:32,height:32,borderRadius:9,background:"#E8F0FE",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <ZapIcon size={16} color="#1A73E8"/>
+              </div>
+              <span style={{fontFamily:"'Roboto', sans-serif",fontSize:15,color:"#1F2430",letterSpacing:"-.01em",fontWeight:700}}>Blueprint Studio</span>
             </div>
 
-            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
               {/* Persona badge */}
               {persona && (
                 <button className="persona-badge" onClick={onChangePersona} data-nondrag>
-                  <span style={{fontSize:14}}>{persona.emoji}</span>
-                  <span style={{color:persona.accentColor,fontWeight:700}}>{persona.name}</span>
-                  <span style={{fontSize:9,color:"#475569"}}>▼</span>
+                  <span style={{fontSize:15,width:22,height:22,borderRadius:6,background:"#F3F5FA",display:"flex",alignItems:"center",justifyContent:"center"}}>{persona.emoji}</span>
+                  <span style={{color:persona.accentColor,fontWeight:600}}>{persona.name}</span>
+                  <span style={{fontSize:9,color:"#B0B7C3"}}>▼</span>
                 </button>
               )}
               {!persona && (
@@ -827,14 +819,14 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
               )}
 
               <button onClick={runAll}
-                style={{display:"flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:5,background:"#22d3ee",color:"#0b0c10",fontSize:12,fontWeight:700,fontFamily:"monospace",border:"none",cursor:"pointer"}}>
-                <PlayIcon size={12} color="#0b0c10"/> Ejecutar todo
+                style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:999,background:"#1A73E8",color:"#FFFFFF",fontSize:12,fontWeight:600,fontFamily:"'Roboto', sans-serif",border:"none",cursor:"pointer",boxShadow:"0 2px 8px rgba(26,115,232,.3)"}}>
+                <PlayIcon size={12} color="#FFFFFF"/> Ejecutar todo
               </button>
-              <button onClick={clearAll} style={{padding:7,borderRadius:5,background:"#1c1f27",border:"none",cursor:"pointer",display:"flex"}} data-nondrag>
-                <TrashIcon size={15} color="#64748b"/>
+              <button onClick={clearAll} style={{padding:9,borderRadius:999,background:"#F3F5FA",border:"1px solid #E7EBF2",cursor:"pointer",display:"flex"}} data-nondrag>
+                <TrashIcon size={15} color="#7A8291"/>
               </button>
-              <button onClick={()=>setShowSettings(true)} style={{padding:7,borderRadius:5,background:"#1c1f27",border:"none",cursor:"pointer",display:"flex"}} data-nondrag>
-                <GearIcon size={15} color="#64748b"/>
+              <button onClick={()=>setShowSettings(true)} style={{padding:9,borderRadius:999,background:"#F3F5FA",border:"1px solid #E7EBF2",cursor:"pointer",display:"flex"}} data-nondrag>
+                <GearIcon size={15} color="#7A8291"/>
               </button>
             </div>
           </div>
@@ -843,10 +835,10 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
           <div ref={wrapRef}
             style={{
               flex:1, position:"relative", overflow:"hidden",
-              backgroundColor:"#0b0c10",
-              backgroundImage:"radial-gradient(#192028 1px, transparent 1px)",
-              backgroundSize:"22px 22px",
-              backgroundPosition:`${pan.x%22}px ${pan.y%22}px`,
+              backgroundColor:"#F3F5FA",
+              backgroundImage:"radial-gradient(#DDE3EE 1px, transparent 1px)",
+              backgroundSize:"24px 24px",
+              backgroundPosition:`${pan.x%24}px ${pan.y%24}px`,
             }}
             onPointerDown={onWrapPointerDown}
             onPointerMove={onWrapPointerMove}
@@ -854,14 +846,14 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
             onPointerLeave={onWrapPointerUp}
           >
             {/* PALETTE */}
-            <div data-nondrag style={{position:"absolute",left:12,top:12,zIndex:30,background:"rgba(15,17,24,0.96)",border:"1px solid #1e2130",borderRadius:10,padding:"6px 4px",backdropFilter:"blur(10px)",display:"flex",flexDirection:"column",gap:1}}>
+            <div data-nondrag style={{position:"absolute",left:16,top:16,zIndex:30,background:"#FFFFFF",border:"1px solid #E7EBF2",borderRadius:16,padding:"8px 6px",boxShadow:"0 4px 20px rgba(60,64,67,.10)",display:"flex",flexDirection:"column",gap:1}}>
               {persona && (
-                <div style={{padding:"6px 12px 8px",borderBottom:"1px solid #1e2130",marginBottom:4}}>
-                  <div style={{fontSize:9,color:"#475569",fontFamily:"monospace",marginBottom:4,letterSpacing:".05em"}}>PERSONAJE ACTIVO</div>
-                  <div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"monospace",fontSize:11,fontWeight:700,color:persona.accentColor}}>
+                <div style={{padding:"8px 14px 10px",borderBottom:"1px solid #E7EBF2",marginBottom:4}}>
+                  <div style={{fontSize:9,color:"#9AA1AD",fontFamily:"'Roboto Mono', monospace",marginBottom:5,letterSpacing:".05em",textTransform:"uppercase"}}>Personaje activo</div>
+                  <div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Roboto', sans-serif",fontSize:12,fontWeight:700,color:persona.accentColor}}>
                     <span style={{fontSize:16}}>{persona.emoji}</span> {persona.name}
                   </div>
-                  <span style={{fontSize:9,color:persona.tagColor,background:persona.tagBg,padding:"1px 6px",borderRadius:8,fontFamily:"monospace"}}>{persona.tag}</span>
+                  <span style={{fontSize:9,color:persona.tagColor,background:persona.tagBg,padding:"2px 8px",borderRadius:999,fontFamily:"'Roboto', sans-serif",fontWeight:600}}>{persona.tag}</span>
                 </div>
               )}
               {Object.keys(NODE_TYPES).map(type=>{
@@ -869,8 +861,8 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
                 return(
                   <button key={type} onClick={()=>addNode(type)}
                     data-nondrag
-                    style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",borderRadius:6,background:"transparent",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:12,fontFamily:"monospace",whiteSpace:"nowrap"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#1c1f27"}
+                    style={{display:"flex",alignItems:"center",gap:9,padding:"8px 14px",borderRadius:10,background:"transparent",border:"none",cursor:"pointer",color:"#4A5160",fontSize:12,fontFamily:"'Roboto', sans-serif",fontWeight:500,whiteSpace:"nowrap"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="#F3F5FA"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <def.Icon size={13} color={def.color}/> {def.label}
                   </button>
@@ -882,23 +874,23 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
             <div style={{position:"absolute",left:0,top:0,transform:`translate(${pan.x}px,${pan.y}px)`,width:8000,height:8000,pointerEvents:"none"}}>
               <svg width={8000} height={8000} style={{position:"absolute",inset:0,overflow:"visible"}}>
                 <defs>
-                  <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 </defs>
                 {connections.map(c=>{
                   const a=nodes.find(n=>n.id===c.from), b=nodes.find(n=>n.id===c.to);
                   if(!a||!b) return null;
-                  const ac=persona?persona.accentColor:"#22d3ee";
+                  const ac=persona?persona.accentColor:"#1A73E8";
                   return(
                     <g key={c.id}>
                       <path d={bezier(portPos(a,"out"),portPos(b,"in"))} stroke="transparent" strokeWidth={14} fill="none" style={{cursor:"pointer",pointerEvents:"stroke"}} onClick={()=>removeConn(c.id)}/>
-                      <path d={bezier(portPos(a,"out"),portPos(b,"in"))} stroke={ac} strokeWidth={1.8} fill="none" filter="url(#glow)" style={{pointerEvents:"none"}}/>
+                      <path d={bezier(portPos(a,"out"),portPos(b,"in"))} stroke={ac} strokeWidth={2.2} fill="none" filter="url(#glow)" style={{pointerEvents:"none"}}/>
                     </g>
                   );
                 })}
                 {dragRef.current?.mode==="wire"&&wireEnd&&(()=>{
                   const a=nodes.find(n=>n.id===dragRef.current.from); if(!a) return null;
-                  const ac=persona?persona.accentColor:"#22d3ee";
-                  return<path d={bezier(portPos(a,"out"),wireEnd)} stroke={ac} strokeWidth={1.8} strokeDasharray="5 4" fill="none" opacity={.55}/>;
+                  const ac=persona?persona.accentColor:"#1A73E8";
+                  return<path d={bezier(portPos(a,"out"),wireEnd)} stroke={ac} strokeWidth={2.2} strokeDasharray="5 5" fill="none" opacity={.5}/>;
                 })()}
               </svg>
 
@@ -909,145 +901,149 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
                   <div key={node.id} data-nodeid={node.id}
                     style={{
                       position:"absolute",left:node.x,top:node.y,width:NODE_W,
-                      background:"#13151b",
-                      border:`1px solid ${node.status==="error"?"#ef444455":"#1e2130"}`,
-                      borderRadius:9, boxShadow:"0 6px 24px rgba(0,0,0,.55)",
+                      background:"#FFFFFF",
+                      border:`1px solid ${node.status==="error"?"#F5C2BE":"#E7EBF2"}`,
+                      borderRadius:18, boxShadow:"0 4px 18px rgba(60,64,67,.10)",
                       pointerEvents:"all",
                     }}>
 
                     {/* IN port */}
                     <div data-port="in" data-nodeid={node.id}
-                      style={{position:"absolute",left:-PORT_R-1,top:PORT_Y-PORT_R,width:PORT_R*2,height:PORT_R*2,borderRadius:"50%",background:"#0b0c10",border:`2px solid ${portColor}`,cursor:"crosshair",zIndex:5,pointerEvents:"all"}}/>
+                      style={{position:"absolute",left:-PORT_R-1,top:PORT_Y-PORT_R,width:PORT_R*2,height:PORT_R*2,borderRadius:"50%",background:"#FFFFFF",border:`2.5px solid ${portColor}`,cursor:"crosshair",zIndex:5,pointerEvents:"all",boxShadow:"0 1px 3px rgba(60,64,67,.15)"}}/>
 
                     {/* Header */}
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 11px",background:"#181b23",borderBottom:"1px solid #1e2130",cursor:"grab",userSelect:"none",borderRadius:"9px 9px 0 0"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:7,fontFamily:"monospace",fontSize:11,color:"#dde4f0",fontWeight:600}}>
-                        <def.Icon size={12} color={def.color}/> {def.label}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 14px",background:"#F8FAFD",borderBottom:"1px solid #EEF1F6",cursor:"grab",userSelect:"none",borderRadius:"18px 18px 0 0"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Roboto', sans-serif",fontSize:12,color:"#1F2430",fontWeight:600}}>
+                        <def.Icon size={13} color={def.color}/> {def.label}
                       </div>
-                      <div style={{display:"flex",alignItems:"center",gap:5}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
                         {node.status==="running"&&<Loader size={13}/>}
-                        {node.status==="done"&&<OkIcon size={13} color="#34d399"/>}
-                        {node.status==="error"&&<ErrIcon size={13} color="#ef4444"/>}
+                        {node.status==="done"&&<OkIcon size={13} color="#1E8E3E"/>}
+                        {node.status==="error"&&<ErrIcon size={13} color="#D93025"/>}
                         <button data-nondrag onClick={()=>removeNode(node.id)} style={{background:"none",border:"none",cursor:"pointer",display:"flex",padding:0,pointerEvents:"all"}}>
-                          <XIcon size={12} color="#475569"/>
+                          <XIcon size={13} color="#9AA1AD"/>
                         </button>
                       </div>
                     </div>
 
                     {/* Persona context hint */}
                     {persona && (
-                      <div data-nondrag style={{padding:"4px 10px",background:`${persona.accentColor}0a`,borderBottom:"1px solid #1e2130",fontSize:9,fontFamily:"monospace",color:persona.accentColor,display:"flex",alignItems:"center",gap:4}}>
+                      <div data-nondrag style={{padding:"5px 14px",background:`${persona.accentColor}0d`,borderBottom:"1px solid #EEF1F6",fontSize:10,fontFamily:"'Roboto', sans-serif",fontWeight:500,color:persona.accentColor,display:"flex",alignItems:"center",gap:5}}>
                         {persona.emoji} Contexto: <strong>{persona.name}</strong>
                       </div>
                     )}
 
                     {/* Body */}
-                    <div data-nondrag style={{padding:10,display:"flex",flexDirection:"column",gap:7}}>
+                    <div data-nondrag style={{padding:12,display:"flex",flexDirection:"column",gap:8}}>
                       {node.type==="dev"&&(
-                        <div style={{display:"flex",gap:4}}>
+                        <div style={{display:"flex",gap:5}}>
                           {["claude","deepseek"].map(p=>(
-                            <button key={p} onClick={()=>updateConfig(node.id,{provider:p})} style={pill(node.config.provider===p,"#22d3ee")}>{p}</button>
+                            <button key={p} onClick={()=>updateConfig(node.id,{provider:p})} style={pill(node.config.provider===p,"#1A73E8")}>{p}</button>
                           ))}
                         </div>
                       )}
                       {node.type==="image"&&(
-                        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                          {["openai","stability","replicate"].map(p=>(
-                            <button key={p} onClick={()=>updateConfig(node.id,{provider:p})} style={pill(node.config.provider===p,"#c084fc")}>{p}</button>
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                          {["openai","leonardo","stability","replicate"].map(p=>(
+                            <button key={p} onClick={()=>updateConfig(node.id,{provider:p})} style={pill(node.config.provider===p,"#A142F4")}>{p}</button>
                           ))}
                         </div>
                       )}
+                      {node.type==="image"&&node.config.provider==="leonardo"&&(
+                        <input value={node.config.modelId||""} onChange={e=>updateConfig(node.id,{modelId:e.target.value})} placeholder="modelId de Leonardo (opcional, usa Lucid Origin por defecto)"
+                          style={{width:"100%",padding:"7px 10px",borderRadius:10,fontSize:11,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
+                      )}
                       {node.type==="image"&&node.config.provider==="replicate"&&(
                         <input value={node.config.version||""} onChange={e=>updateConfig(node.id,{version:e.target.value})} placeholder="versión del modelo Replicate"
-                          style={{width:"100%",padding:"5px 8px",borderRadius:4,fontSize:11,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0"}}/>
+                          style={{width:"100%",padding:"7px 10px",borderRadius:10,fontSize:11,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
                       )}
                       {node.type==="video"&&(
                         <>
-                          <div style={{display:"flex",gap:4}}>
+                          <div style={{display:"flex",gap:5}}>
                             {["stability","replicate"].map(p=>(
-                              <button key={p} onClick={()=>updateConfig(node.id,{provider:p})} style={pill(node.config.provider===p,"#fb7185")}>{p}</button>
+                              <button key={p} onClick={()=>updateConfig(node.id,{provider:p})} style={pill(node.config.provider===p,"#EA4335")}>{p}</button>
                             ))}
                           </div>
                           <input value={node.config.version||""} onChange={e=>updateConfig(node.id,{version:e.target.value})} placeholder="versión del modelo"
-                            style={{width:"100%",padding:"5px 8px",borderRadius:4,fontSize:11,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0"}}/>
+                            style={{width:"100%",padding:"7px 10px",borderRadius:10,fontSize:11,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
                         </>
                       )}
                       {node.type==="social"&&(
-                        <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                           {PLATFORMS.map(p=>{
                             const active=node.config.platforms?.includes(p);
-                            return<button key={p} onClick={()=>{const cur=node.config.platforms||[]; updateConfig(node.id,{platforms:active?cur.filter(x=>x!==p):[...cur,p]});}} style={{...pill(active,"#f472b6"),textTransform:"capitalize"}}>{p}</button>;
+                            return<button key={p} onClick={()=>{const cur=node.config.platforms||[]; updateConfig(node.id,{platforms:active?cur.filter(x=>x!==p):[...cur,p]});}} style={{...pill(active,"#D81B60"),textTransform:"capitalize"}}>{p}</button>;
                           })}
                         </div>
                       )}
                       {node.type==="outlook"&&(
                         <>
-                          <div style={{display:"flex",gap:4}}>
+                          <div style={{display:"flex",gap:5}}>
                             {[{v:"send",l:"Enviar"},{v:"read",l:"Leer bandeja"}].map(o=>(
-                              <button key={o.v} onClick={()=>updateConfig(node.id,{action:o.v})} style={pill(node.config.action===o.v,"#0ea5e9")}>{o.l}</button>
+                              <button key={o.v} onClick={()=>updateConfig(node.id,{action:o.v})} style={pill(node.config.action===o.v,"#0288D1")}>{o.l}</button>
                             ))}
                           </div>
                           {node.config.action==="send"&&(
                             <>
                               <input value={node.config.to||""} onChange={e=>updateConfig(node.id,{to:e.target.value})} placeholder="destinatario@correo.com"
-                                style={{width:"100%",padding:"5px 8px",borderRadius:4,fontSize:11,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0"}}/>
+                                style={{width:"100%",padding:"7px 10px",borderRadius:10,fontSize:11,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
                               <input value={node.config.subject||""} onChange={e=>updateConfig(node.id,{subject:e.target.value})} placeholder="asunto del correo"
-                                style={{width:"100%",padding:"5px 8px",borderRadius:4,fontSize:11,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0"}}/>
+                                style={{width:"100%",padding:"7px 10px",borderRadius:10,fontSize:11,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
                             </>
                           )}
                         </>
                       )}
                       {node.type==="whatsapp"&&(
                         <>
-                          <div style={{display:"flex",gap:4}}>
+                          <div style={{display:"flex",gap:5}}>
                             {[{v:"whatsapp",l:"WhatsApp"},{v:"messenger",l:"Messenger"}].map(o=>(
-                              <button key={o.v} onClick={()=>updateConfig(node.id,{channel:o.v})} style={pill(node.config.channel===o.v,"#22c55e")}>{o.l}</button>
+                              <button key={o.v} onClick={()=>updateConfig(node.id,{channel:o.v})} style={pill(node.config.channel===o.v,"#1DA851")}>{o.l}</button>
                             ))}
                           </div>
                           <input value={node.config.to||""} onChange={e=>updateConfig(node.id,{to:e.target.value})}
                             placeholder={node.config.channel==="whatsapp"?"número (ej. 521234567890)":"PSID del destinatario"}
-                            style={{width:"100%",padding:"5px 8px",borderRadius:4,fontSize:11,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0"}}/>
+                            style={{width:"100%",padding:"7px 10px",borderRadius:10,fontSize:11,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
                         </>
                       )}
 
                       <textarea value={node.prompt} onChange={e=>updateNode(node.id,{prompt:e.target.value})}
                         placeholder={node.type==="text"?"Escribe el texto fuente…":node.type==="social"?"Texto del post…":"Describe lo que necesitas…"}
                         rows={2}
-                        style={{width:"100%",padding:"6px 8px",borderRadius:4,fontSize:12,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0",resize:"vertical"}}/>
+                        style={{width:"100%",padding:"8px 10px",borderRadius:10,fontSize:12,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430",resize:"vertical"}}/>
 
                       <button onClick={()=>runNode(node.id)} disabled={node.status==="running"}
-                        style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"6px",borderRadius:5,fontSize:12,fontFamily:"monospace",cursor:node.status==="running"?"not-allowed":"pointer",border:`1px solid ${def.color}35`,background:"#181b23",color:def.color,opacity:node.status==="running"?.6:1}}>
+                        style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"8px",borderRadius:999,fontSize:12,fontWeight:600,fontFamily:"'Roboto', sans-serif",cursor:node.status==="running"?"not-allowed":"pointer",border:`1px solid ${def.color}35`,background:`${def.color}0d`,color:def.color,opacity:node.status==="running"?.6:1}}>
                         <PlayIcon size={11} color={def.color}/> Ejecutar
                       </button>
 
                       {node.error&&(
-                        <div style={{padding:"6px 8px",borderRadius:4,fontSize:10,fontFamily:"monospace",background:"#2a1215",color:"#fca5a5",lineHeight:1.5}}>{node.error}</div>
+                        <div style={{padding:"8px 10px",borderRadius:10,fontSize:10,fontFamily:"'Roboto Mono', monospace",background:"#FCE8E6",color:"#C5221F",lineHeight:1.5}}>{node.error}</div>
                       )}
                       {node.output&&(
-                        <div style={{borderRadius:5,border:"1px solid #1e2130",overflow:"hidden"}}>
-                          {node.output.type==="text"&&<div style={{padding:8,fontSize:10,fontFamily:"monospace",color:"#94a3b8",whiteSpace:"pre-wrap",maxHeight:130,overflowY:"auto",lineHeight:1.6}}>{node.output.value}</div>}
+                        <div style={{borderRadius:12,border:"1px solid #EEF1F6",overflow:"hidden"}}>
+                          {node.output.type==="text"&&<div style={{padding:10,fontSize:10,fontFamily:"'Roboto Mono', monospace",color:"#4A5160",whiteSpace:"pre-wrap",maxHeight:130,overflowY:"auto",lineHeight:1.6,background:"#F8FAFD"}}>{node.output.value}</div>}
                           {node.output.type==="image"&&<img src={node.output.value} style={{width:"100%",display:"block"}} alt=""/>}
                           {node.output.type==="audio"&&<audio controls src={node.output.value} style={{width:"100%",display:"block"}}/>}
                           {node.output.type==="video"&&<video controls src={node.output.value} style={{width:"100%",display:"block"}}/>}
                           {node.output.type==="3d"&&(
-                            <div style={{padding:8,display:"flex",flexDirection:"column",gap:6}}>
-                              {node.output.thumbnail&&<img src={node.output.thumbnail} style={{width:"100%",borderRadius:4}} alt=""/>}
-                              {node.output.value&&<a href={node.output.value} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#34d399",textDecoration:"none"}}>⬇ Descargar modelo .glb</a>}
+                            <div style={{padding:10,display:"flex",flexDirection:"column",gap:6,background:"#F8FAFD"}}>
+                              {node.output.thumbnail&&<img src={node.output.thumbnail} style={{width:"100%",borderRadius:8}} alt=""/>}
+                              {node.output.value&&<a href={node.output.value} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#1E8E3E",textDecoration:"none",fontWeight:600}}>⬇ Descargar modelo .glb</a>}
                             </div>
                           )}
                           {node.output.type==="preview"&&(
-                            <div style={{padding:8,display:"flex",flexDirection:"column",gap:8,maxHeight:220,overflowY:"auto"}}>
+                            <div style={{padding:10,display:"flex",flexDirection:"column",gap:8,maxHeight:220,overflowY:"auto",background:"#F8FAFD"}}>
                               {node.output.value.length===0&&(
-                                <div style={{fontSize:10,fontFamily:"monospace",color:"#475569"}}>Sin nodos conectados todavía.</div>
+                                <div style={{fontSize:10,fontFamily:"'Roboto Mono', monospace",color:"#9AA1AD"}}>Sin nodos conectados todavía.</div>
                               )}
                               {node.output.value.map((item,i)=>(
-                                <div key={i} style={{border:"1px solid #1e2130",borderRadius:4,padding:6}}>
-                                  <div style={{fontSize:9,fontFamily:"monospace",color:"#fb923c",marginBottom:4,textTransform:"uppercase"}}>{item.nodeType}</div>
-                                  {item.type==="text"&&<div style={{fontSize:10,fontFamily:"monospace",color:"#94a3b8",whiteSpace:"pre-wrap",lineHeight:1.5}}>{item.value}</div>}
-                                  {item.type==="image"&&<img src={item.value} style={{width:"100%",borderRadius:3}} alt=""/>}
+                                <div key={i} style={{border:"1px solid #E7EBF2",borderRadius:8,padding:8,background:"#FFFFFF"}}>
+                                  <div style={{fontSize:9,fontFamily:"'Roboto Mono', monospace",color:"#E8710A",marginBottom:5,textTransform:"uppercase",fontWeight:700}}>{item.nodeType}</div>
+                                  {item.type==="text"&&<div style={{fontSize:10,fontFamily:"'Roboto Mono', monospace",color:"#4A5160",whiteSpace:"pre-wrap",lineHeight:1.5}}>{item.value}</div>}
+                                  {item.type==="image"&&<img src={item.value} style={{width:"100%",borderRadius:6}} alt=""/>}
                                   {item.type==="audio"&&<audio controls src={item.value} style={{width:"100%"}}/>}
-                                  {item.type==="video"&&<video controls src={item.value} style={{width:"100%",borderRadius:3}}/>}
-                                  {!item.type&&<div style={{fontSize:10,color:"#475569"}}>(sin ejecutar aún)</div>}
+                                  {item.type==="video"&&<video controls src={item.value} style={{width:"100%",borderRadius:6}}/>}
+                                  {!item.type&&<div style={{fontSize:10,color:"#9AA1AD"}}>(sin ejecutar aún)</div>}
                                 </div>
                               ))}
                             </div>
@@ -1058,13 +1054,13 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
 
                     {/* OUT port */}
                     <div data-port="out" data-nodeid={node.id}
-                      style={{position:"absolute",right:-PORT_R-1,top:PORT_Y-PORT_R,width:PORT_R*2,height:PORT_R*2,borderRadius:"50%",background:"#0b0c10",border:`2px solid ${portColor}`,cursor:"crosshair",zIndex:5,pointerEvents:"all"}}/>
+                      style={{position:"absolute",right:-PORT_R-1,top:PORT_Y-PORT_R,width:PORT_R*2,height:PORT_R*2,borderRadius:"50%",background:"#FFFFFF",border:`2.5px solid ${portColor}`,cursor:"crosshair",zIndex:5,pointerEvents:"all",boxShadow:"0 1px 3px rgba(60,64,67,.15)"}}/>
                   </div>
                 );
               })}
 
               {nodes.length===0&&(
-                <div style={{position:"absolute",left:320,top:200,fontFamily:"monospace",fontSize:12,color:"#2a3040",lineHeight:2,pointerEvents:"none",textAlign:"center"}}>
+                <div style={{position:"absolute",left:320,top:200,fontFamily:"'Roboto Mono', monospace",fontSize:12,color:"#B0B7C3",lineHeight:2,pointerEvents:"none",textAlign:"center"}}>
                   ← Agrega un nodo desde el panel izquierdo<br/>
                   Conéctalos arrastrando desde el puerto ● derecho al ● izquierdo
                 </div>
@@ -1074,29 +1070,32 @@ Eres apasionado, ideológico pero técnicamente riguroso. El mensaje y el métod
 
           {/* SETTINGS */}
           {showSettings&&(
-            <div onClick={()=>setShowSettings(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-              <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,background:"#13151b",border:"1px solid #1e2130",borderRadius:12,padding:22}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,fontFamily:"monospace",fontSize:13,color:"#e2e8f0",fontWeight:700}}>
-                    <KeyIcon size={14} color="#22d3ee"/> API KEYS
+            <div onClick={()=>setShowSettings(false)} style={{position:"fixed",inset:0,background:"rgba(31,36,48,.45)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16,backdropFilter:"blur(2px)"}}>
+              <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:440,background:"#FFFFFF",border:"1px solid #E7EBF2",borderRadius:24,padding:26,boxShadow:"0 20px 60px rgba(31,36,48,.25)"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                  <div style={{display:"flex",alignItems:"center",gap:9,fontFamily:"'Roboto', sans-serif",fontSize:14,color:"#1F2430",fontWeight:700}}>
+                    <div style={{width:30,height:30,borderRadius:9,background:"#E8F0FE",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <KeyIcon size={14} color="#1A73E8"/>
+                    </div>
+                    API Keys
                   </div>
-                  <button onClick={()=>setShowSettings(false)} style={{background:"none",border:"none",cursor:"pointer",display:"flex"}}><XIcon size={16} color="#64748b"/></button>
+                  <button onClick={()=>setShowSettings(false)} style={{background:"#F3F5FA",border:"none",borderRadius:999,width:28,height:28,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><XIcon size={15} color="#7A8291"/></button>
                 </div>
-                <p style={{fontSize:11,color:"#475569",marginBottom:14,lineHeight:1.6}}>
-                  Guardadas en localStorage. <strong style={{color:"#94a3b8"}}>Búsqueda</strong> y <strong style={{color:"#94a3b8"}}>Dev (claude)</strong> no requieren key.
-                  <br/><strong style={{color:"#0ea5e9"}}>Outlook</strong> y <strong style={{color:"#22c55e"}}>WhatsApp/Messenger</strong> requieren que tú obtengas tu propio token (Microsoft Graph / Meta for Developers) — no se generan aquí.
+                <p style={{fontSize:12, color:"#7A8291", marginBottom:16, lineHeight:1.6}}>
+                  <strong style={{color:"#1A73E8"}}>Claude</strong>, <strong style={{color:"#5C6BC0"}}>DeepSeek</strong>, <strong style={{color:"#1F2430"}}>OpenAI</strong>, <strong style={{color:"#E8710A"}}>Leonardo</strong> y <strong style={{color:"#1E8E3E"}}>Meshy</strong> ya funcionan solos — sus keys viven en las variables de entorno de Vercel. Lo de abajo se guarda en localStorage y solo hace falta para lo que no tiene variable configurada aún.
+                  <br/><strong style={{color:"#0288D1"}}>Outlook</strong> y <strong style={{color:"#1DA851"}}>WhatsApp/Messenger</strong> requieren que tú obtengas tu propio token (Microsoft Graph / Meta for Developers) — no se generan aquí.
                 </p>
-                <div style={{display:"flex",flexDirection:"column",gap:10,maxHeight:"55vh",overflowY:"auto"}}>
+                <div style={{display:"flex",flexDirection:"column",gap:11,maxHeight:"55vh",overflowY:"auto"}}>
                   {KEY_FIELDS.map(f=>(
                     <div key={f.key}>
-                      <label style={{display:"block",fontFamily:"monospace",fontSize:10,color:"#64748b",marginBottom:4}}>{f.label}</label>
+                      <label style={{display:"block",fontFamily:"'Roboto', sans-serif",fontSize:11,fontWeight:500,color:"#7A8291",marginBottom:5}}>{f.label}</label>
                       <input type="password" value={apiKeys[f.key]||""} onChange={e=>setApiKeys(k=>({...k,[f.key]:e.target.value}))}
-                        style={{width:"100%",padding:"7px 10px",borderRadius:5,fontSize:12,fontFamily:"monospace",background:"#0d0e14",border:"1px solid #1e2130",color:"#e2e8f0"}}/>
+                        style={{width:"100%",padding:"9px 12px",borderRadius:12,fontSize:12,fontFamily:"'Roboto Mono', monospace",background:"#F8FAFD",border:"1px solid #E7EBF2",color:"#1F2430"}}/>
                     </div>
                   ))}
                 </div>
                 <button onClick={()=>{saveKeys(apiKeys);setShowSettings(false);}}
-                  style={{width:"100%",marginTop:16,padding:"9px",borderRadius:6,fontSize:12,fontWeight:700,fontFamily:"monospace",background:"#22d3ee",color:"#0b0c10",border:"none",cursor:"pointer"}}>
+                  style={{width:"100%",marginTop:18,padding:"12px",borderRadius:999,fontSize:13,fontWeight:700,fontFamily:"'Roboto', sans-serif",background:"#1A73E8",color:"#FFFFFF",border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(26,115,232,.3)"}}>
                   Guardar
                 </button>
               </div>
