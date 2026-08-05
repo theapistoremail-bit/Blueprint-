@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VEGA — Inteligencia que te entiende</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080810;
+      --surface: #10101C;
+      --surface-2: #181828;
+      --text: #EEEAF8;
+      --text-muted: #6A6480;
+      --border: rgba(255,255,255,0.07);
+      --active-color: #6C63FF;
+      --active-color-alt: #9B93FF;
+      --active-rgb: 108, 99, 255;
+      --active-shadow: rgba(108, 99, 255, 0.35);
+      --radius: 16px;
+      --trans: 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(8,8,16,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem; font-weight: 500; letter-spacing: 0.18em;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-logo span { color: var(--active-color); transition: color var(--trans); }
+
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      font-size: 0.875rem; color: var(--text-muted); text-decoration: none;
+      letter-spacing: 0.02em; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 500;
+      padding: 9px 20px; border-radius: 9px; border: none; cursor: pointer;
+      transition: all 0.2s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-ghost {
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.14); }
+
+    .btn-primary {
+      background: var(--active-color); color: #fff;
+      transition: background var(--trans), box-shadow var(--trans), filter 0.2s;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 24px var(--active-shadow); filter: brightness(1.1);
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; padding: 0 48px; padding-top: 64px; gap: 48px;
+      max-width: 1240px; margin: 0 auto;
+    }
+
+    .hero-content { padding: 48px 0; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em;
+      color: var(--active-color);
+      border: 1px solid rgba(var(--active-rgb), 0.3);
+      padding: 6px 14px; border-radius: 100px; margin-bottom: 32px;
+      transition: color var(--trans), border-color var(--trans);
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--active-color);
+      animation: blink 2s ease infinite;
+      transition: background var(--trans);
+    }
+    @keyframes blink {
+      0%,100%{opacity:1} 50%{opacity:0.25}
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.6rem, 5vw, 4.2rem); font-weight: 700;
+      line-height: 1.07; letter-spacing: -0.025em; margin-bottom: 20px;
+    }
+    h1 .accent { color: var(--active-color); transition: color var(--trans); }
+
+    .hero-sub {
+      font-size: 1.05rem; color: var(--text-muted); line-height: 1.75;
+      margin-bottom: 36px; max-width: 440px;
+    }
+
+    .hero-quote {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+      color: var(--active-color-alt);
+      border-left: 2px solid var(--active-color);
+      padding: 10px 16px; margin-bottom: 36px;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.4s, transform 0.4s, border-color var(--trans), color var(--trans);
+      min-height: 44px;
+    }
+    .hero-quote.visible { opacity: 1; transform: translateY(0); }
+
+    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* ─── ORB ─── */
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+      position: relative; height: 520px;
+    }
+
+    .orb-wrapper {
+      position: relative; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    .orb {
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--active-color-alt), var(--active-color) 55%, transparent 80%);
+      box-shadow: 0 0 80px var(--active-shadow), 0 0 160px rgba(var(--active-rgb),0.08);
+      animation: float 4s ease-in-out infinite;
+      transition: background var(--trans), box-shadow var(--trans);
+      position: relative; z-index: 2;
+    }
+    .orb::after {
+      content: ''; position: absolute; inset: -2px; border-radius: 50%;
+      background: inherit; filter: blur(18px); opacity: 0.35; z-index: -1;
+    }
+    @keyframes float {
+      0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)}
+    }
+
+    .orb-ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(var(--active-rgb), 0.18);
+      transition: border-color var(--trans);
+    }
+    .ring-1 { width: 300px; height: 300px; animation: spin 14s linear infinite; }
+    .ring-2 { width: 390px; height: 390px; animation: spin 22s linear infinite reverse; border-style: dashed; border-color: rgba(var(--active-rgb), 0.08); }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    .persona-label {
+      position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.22em;
+      color: var(--active-color); opacity: 0.6; white-space: nowrap;
+      transition: color var(--trans);
+    }
+
+    .waveform {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 4px; align-items: flex-end; height: 32px;
+    }
+    .bar {
+      width: 3px; border-radius: 2px;
+      background: var(--active-color); opacity: 0.45;
+      transition: background var(--trans);
+      animation: wavebar 1.2s ease-in-out infinite alternate;
+    }
+    .bar:nth-child(1){height:8px;animation-delay:0s}
+    .bar:nth-child(2){height:18px;animation-delay:.1s}
+    .bar:nth-child(3){height:28px;animation-delay:.2s}
+    .bar:nth-child(4){height:14px;animation-delay:.3s}
+    .bar:nth-child(5){height:22px;animation-delay:.15s}
+    .bar:nth-child(6){height:10px;animation-delay:.25s}
+    .bar:nth-child(7){height:20px;animation-delay:.05s}
+    .bar:nth-child(8){height:6px;animation-delay:.35s}
+    @keyframes wavebar { from{transform:scaleY(0.25)} to{transform:scaleY(1)} }
+
+    /* ─── SECTIONS ─── */
+    section {
+      padding: 100px 48px;
+      max-width: 1240px; margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--active-color); margin-bottom: 12px;
+      transition: color var(--trans);
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 1rem; color: var(--text-muted); max-width: 480px;
+      line-height: 1.75; margin-bottom: 56px;
+    }
+
+    /* ─── PERSONALITIES ─── */
+    .personas-grid {
+      display: grid; grid-template-columns: repeat(5,1fr); gap: 14px;
+    }
+
+    .persona-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 18px; cursor: pointer;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .persona-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--p-color); opacity: 0; transition: opacity 0.25s;
+    }
+    .persona-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-5px); }
+    .persona-card.active { border-color: var(--p-color); }
+    .persona-card.active::before { opacity: 1; }
+
+    .persona-icon {
+      font-size: 1.5rem; margin-bottom: 14px;
+      transition: transform 0.3s;
+    }
+    .persona-card:hover .persona-icon { transform: scale(1.15); }
+
+    .persona-name {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      font-weight: 500; letter-spacing: 0.16em;
+      color: var(--p-color); margin-bottom: 6px;
+    }
+    .persona-tagline {
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px;
+    }
+    .persona-trait {
+      display: inline-block; font-size: 0.68rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); padding: 3px 10px;
+      border-radius: 100px; color: var(--text-muted);
+    }
+
+    /* ─── PRICING ─── */
+    #precios { border-top: 1px solid var(--border); }
+
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+    }
+
+    .plan-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px 28px;
+      position: relative; transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .plan-card:hover { transform: translateY(-5px); }
+
+    .plan-card.featured {
+      border-color: var(--active-color);
+      box-shadow: 0 0 48px var(--active-shadow);
+    }
+    .plan-card.featured::after {
+      content: 'MÁS POPULAR';
+      position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em;
+      background: var(--active-color); color: #fff;
+      padding: 4px 14px; border-radius: 0 0 8px 8px;
+      transition: background var(--trans);
+    }
+
+    .plan-name {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      letter-spacing: 0.2em; color: var(--text-muted); margin-bottom: 10px;
+    }
+    .plan-price {
+      font-family: 'Space Grotesk', sans-serif; font-size: 2.6rem;
+      font-weight: 700; line-height: 1; margin-bottom: 4px;
+    }
+    .plan-price sup { font-size: 1rem; vertical-align: super; font-weight: 400; color: var(--text-muted); }
+    .plan-period { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 24px; }
+
+    hr.plan-divider { border: none; border-top: 1px solid var(--border); margin-bottom: 22px; }
+
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+    .plan-features li {
+      font-size: 0.85rem; color: var(--text-muted);
+      display: flex; align-items: flex-start; gap: 10px; line-height: 1.45;
+    }
+    .plan-features li::before {
+      content: '✓'; color: var(--active-color); font-size: 0.72rem;
+      margin-top: 2px; flex-shrink: 0; transition: color var(--trans);
+    }
+    .plan-features li.off { opacity: 0.35; }
+    .plan-features li.off::before { content: '—'; }
+
+    .btn-plan { width: 100%; padding: 12px; justify-content: center; font-size: 0.88rem; }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(10px);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 40px; width: 100%; max-width: 420px;
+      position: relative; transform: translateY(18px); transition: transform 0.3s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: none; color: var(--text-muted); font-size: 1rem;
+      cursor: pointer; width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; transition: background 0.2s, color 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+    .modal-logo {
+      font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.18em;
+      color: var(--active-color); margin-bottom: 8px; transition: color var(--trans);
+    }
+    .modal-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 6px;
+    }
+    .modal-sub { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 26px; }
+
+    .modal-tabs {
+      display: flex; background: var(--bg); border-radius: 10px;
+      padding: 4px; margin-bottom: 22px;
+    }
+    .tab-btn {
+      flex: 1; padding: 8px; border: none; background: none;
+      color: var(--text-muted); font-size: 0.875rem; font-family: 'Inter', sans-serif;
+      font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active { background: var(--surface-2); color: var(--text); }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input {
+      width: 100%; padding: 11px 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-size: 0.875rem;
+      font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--active-color); }
+    .form-input::placeholder { color: var(--text-muted); }
+
+    .form-error { font-size: 0.78rem; color: #FF6B6B; min-height: 18px; margin-bottom: 10px; }
+    .form-success { font-size: 0.82rem; color: #6BFFB8; text-align: center; margin-bottom: 10px; }
+
+    .btn-submit { width: 100%; padding: 12px; justify-content: center; margin-top: 4px; }
+
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; color: var(--text-muted);
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 100px;
+    }
+    .user-dot { width: 6px; height: 6px; border-radius: 50%; background: #6BFFB8; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1240px; margin: 0 auto;
+    }
+    .footer-brand {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.88rem;
+      letter-spacing: 0.15em; color: var(--text-muted);
+    }
+    .footer-brand span { color: var(--active-color); transition: color var(--trans); }
+    .footer-note { font-size: 0.72rem; color: var(--text-muted); opacity: 0.45; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 960px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+
+      .hero {
+        grid-template-columns: 1fr; padding: 80px 24px 48px;
+        text-align: center;
+      }
+      .hero-sub { margin-left: auto; margin-right: auto; }
+      .hero-cta { justify-content: center; }
+      .hero-visual { height: 320px; }
+      .orb { width: 160px; height: 160px; }
+      .ring-1 { width: 220px; height: 220px; }
+      .ring-2 { width: 290px; height: 290px; }
+
+      section { padding: 64px 24px; }
+
+      .personas-grid { grid-template-columns: repeat(2,1fr); }
+      .persona-card:last-child { grid-column: span 2; max-width: 260px; margin: 0 auto; width: 100%; }
+
+      .pricing-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
+
+      footer { flex-direction: column; gap: 10px; padding: 28px 24px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <a href="#" class="nav-logo">VE<span>GA</span></a>
+  <ul class="nav-links">
+    <li><a href="#personalidades">Personalidades</a></li>
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#precios">Docs</a></li>
+  </ul>
+  <div class="nav-actions" id="navActions">
+    <button class="btn btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
+    <button class="btn btn-primary" onclick="openModal('signup')">Comenzar gratis</button>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      ASISTENTE ADAPTATIVO · BLUEPRINT STUDIO
+    </div>
+    <h1>Tu asistente.<br><span class="accent">Tu esencia.</span></h1>
+    <p class="hero-sub">VEGA es un asistente de inteligencia artificial que adopta la personalidad que necesitas — controla tu espacio, ejecuta tus flujos de trabajo y te habla como quieres que te hablen.</p>
+    <div class="hero-quote" id="heroQuote">Selecciona una personalidad para ver cómo responde VEGA.</div>
+    <div class="hero-cta">
+      <button class="btn btn-primary" onclick="openModal('signup')">Comenzar gratis</button>
+      <a href="#personalidades" class="btn btn-ghost">Ver personalidades ↓</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="orb-wrapper">
+      <div class="orb-ring ring-2"></div>
+      <div class="orb-ring ring-1"></div>
+      <div class="orb" id="orb"></div>
+    </div>
+    <div class="persona-label" id="orbLabel">NINGUNA · SELECCIONADA</div>
+    <div class="waveform">
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PERSONALIDADES ══ -->
+<section id="personalidades">
+  <div class="eyebrow">Personalidades</div>
+  <h2 class="section-title">Elige cómo quieres que piense</h2>
+  <p class="section-sub">Cada perfil tiene su forma de comunicarse, priorizar y responder. Cambia en cualquier momento — incluso a mitad de una conversación.</p>
+  <div class="personas-grid" id="personasGrid"></div>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section id="precios">
+  <div class="eyebrow">Planes</div>
+  <h2 class="section-title">Simple. Sin sorpresas.</h2>
+  <p class="section-sub">Empieza gratis. Escala cuando lo necesites.</p>
+  <div class="pricing-grid">
+
+    <div class="plan-card">
+      <div class="plan-name">STARTER</div>
+      <div class="plan-price">Gratis</div>
+      <div class="plan-period">Sin tarjeta de crédito</div>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>1 personalidad activa</li>
+        <li>50 consultas por día</li>
+        <li>Solo texto</li>
+        <li>Blueprint Studio básico</li>
+        <li class="off">Voz bidireccional</li>
+        <li class="off">Control de dispositivos</li>
+      </ul>
+      <button class="btn btn-ghost btn-plan" onclick="openModal('signup')">Crear cuenta gratis</button>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-name">PRO</div>
+      <div class="plan-price"><sup>$</sup>12<sup style="font-size:.9rem;vertical-align:middle">/mo</sup></div>
+      <div class="plan-period">Facturación mensual</div>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>Todas las personalidades</li>
+        <li>Consultas ilimitadas</li>
+        <li>Voz bidireccional (ElevenLabs)</li>
+        <li>Blueprint Studio completo</li>
+        <li>Respuesta prioritaria</li>
+        <li class="off">Control IoT</li>
+      </ul>
+      <button class="btn btn-primary btn-plan" onclick="openModal('signup')">Comenzar con Pro</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">NEXUS</div>
+      <div class="plan-price"><sup>$</sup>29<sup style="font-size:.9rem;vertical-align:middle">/mo</sup></div>
+      <div class="plan-period">Todo incluido</div>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>Todo lo de Pro</li>
+        <li>Control de dispositivos IoT</li>
+        <li>Personalidad personalizable</li>
+        <li>API de integración propia</li>
+        <li>Hasta 3 espacios inteligentes</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <button class="btn btn-ghost btn-plan" onclick="openModal('signup')">Activar Nexus</button>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">VE<span>GA</span> · Asistente Inteligente</div>
+  <div class="footer-note">Integra con Blueprint Studio · Powered by Claude & ElevenLabs</div>
+</footer>
+
+<!-- ══ AUTH MODAL ══ -->
+<div class="modal-overlay" id="modalOverlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-logo">VEGA</div>
+    <h2 class="modal-title" id="modalTitle">Crear cuenta</h2>
+    <p class="modal-sub" id="modalSub">Empieza con el plan gratuito. Sin tarjeta.</p>
+
+    <div class="modal-tabs">
+      <button class="tab-btn active" id="tabSignup" onclick="switchTab('signup')">Crear cuenta</button>
+      <button class="tab-btn" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="formSignup">
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-input" type="email" id="signupEmail" placeholder="tu@correo.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input class="form-input" type="password" id="signupPassword" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="form-error" id="signupError"></div>
+      <div class="form-success" id="signupSuccess" style="display:none"></div>
+      <button class="btn btn-primary btn-submit" id="btnSignup" onclick="handleSignup()">Crear cuenta</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="formLogin" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="tu@correo.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input class="form-input" type="password" id="loginPassword" placeholder="Tu contraseña">
+      </div>
+      <div class="form-error" id="loginError"></div>
+      <button class="btn btn-primary btn-submit" id="btnLogin" onclick="handleLogin()">Iniciar sesión</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ════════════════════════════════════════════════
+  // SUPABASE CONFIG
+  // Reemplaza estos valores con los de tu proyecto
+  // en https://supabase.com/dashboard → Settings → API
+  // ════════════════════════════════════════════════
+  const SUPABASE_URL     = 'https://TU_PROYECTO.supabase.co';
+  const SUPABASE_ANON_KEY = 'TU_ANON_KEY_AQUI';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ════════════════════════════════════════════════
+  // PERSONALIDADES
+  // ════════════════════════════════════════════════
+  const personas = [
+    {
+      id: 'cipher',
+      name: 'CIPHER',
+      icon: '⬡',
+      tagline: 'Analítico. Preciso. Sin rodeos.',
+      trait: 'Estrategia & Datos',
+      quote: '"Analicé 3 rutas. La óptima tiene 4 pasos. ¿Empezamos?"',
+      color: '#4FC3F7',
+      colorDark: '#0D3A6A',
+      rgb: '79, 195, 247',
+      shadow: 'rgba(79,195,247,0.32)',
+    },
+    {
+      id: 'solace',
+      name: 'SOLACE',
+      icon: '◎',
+      tagline: 'Cálido. Empático. Siempre presente.',
+      trait: 'Bienestar & Apoyo',
+      quote: '"Entiendo cómo te sientes. Vamos paso a paso, juntos."',
+      color: '#CE93D8',
+      colorDark: '#3D0A5A',
+      rgb: '206, 147, 216',
+      shadow: 'rgba(206,147,216,0.32)',
+    },
+    {
+      id: 'forge',
+      name: 'FORGE',
+      icon: '◈',
+      tagline: 'Implacable. Motivador. Sin excusas.',
+      trait: 'Productividad & Metas',
+      quote: '"3 tareas pendientes. El tiempo corre. Empecemos ahora."',
+      color: '#FFB74D',
+      colorDark: '#7A2800',
+      rgb: '255, 183, 77',
+      shadow: 'rgba(255,183,77,0.32)',
+    },
+    {
+      id: 'echo',
+      name: 'ECHO',
+      icon: '◐',
+      tagline: 'Creativo. Curioso. Fuera del molde.',
+      trait: 'Creatividad & Diseño',
+      quote: '"¿Y si abordamos esto desde un ángulo completamente inesperado?"',
+      color: '#80CBC4',
+      colorDark: '#00332E',
+      rgb: '128, 203, 196',
+      shadow: 'rgba(128,203,196,0.32)',
+    },
+    {
+      id: 'prism',
+      name: 'PRISM',
+      icon: '◇',
+      tagline: 'Juguetón. Veloz. Lleno de ideas.',
+      trait: 'Ideas & Diversión',
+      quote: '"Encontré 7 formas de hacerlo. Solo una explota (creo)."',
+      color: '#F48FB1',
+      colorDark: '#5A0030',
+      rgb: '244, 143, 177',
+      shadow: 'rgba(244,143,177,0.32)',
+    },
+  ];
+
+  function renderPersonas() {
+    document.getElementById('personasGrid').innerHTML = personas.map(p => `
+      <div class="persona-card" id="card-${p.id}"
+           style="--p-color:${p.color}"
+           onclick="selectPersona('${p.id}')">
+        <div class="persona-icon">${p.icon}</div>
+        <div class="persona-name">${p.name}</div>
+        <div class="persona-tagline">${p.tagline}</div>
+        <div class="persona-trait">${p.trait}</div>
+      </div>
+    `).join('');
+  }
+
+  function selectPersona(id) {
+    const p = personas.find(x => x.id === id);
+    if (!p) return;
+
+    // Cards
+    document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('card-' + id).classList.add('active');
+
+    // CSS vars
+    const r = document.documentElement;
+    r.style.setProperty('--active-color', p.color);
+    r.style.setProperty('--active-color-alt', p.colorDark);
+    r.style.setProperty('--active-rgb', p.rgb);
+    r.style.setProperty('--active-shadow', p.shadow);
+
+    // Orb
+    const orb = document.getElementById('orb');
+    orb.style.background = `radial-gradient(circle at 35% 35%, ${p.color}, ${p.colorDark} 60%, transparent 85%)`;
+    orb.style.boxShadow = `0 0 80px ${p.shadow}, 0 0 160px rgba(${p.rgb},0.07)`;
+
+    // Rings
+    document.querySelectorAll('.orb-ring').forEach(r => {
+      r.style.borderColor = `rgba(${p.rgb},0.18)`;
+    });
+
+    // Label
+    document.getElementById('orbLabel').textContent = p.name + ' · ACTIVO';
+
+    // Hero quote
+    const q = document.getElementById('heroQuote');
+    q.classList.remove('visible');
+    setTimeout(() => {
+      q.textContent = p.quote;
+      q.classList.add('visible');
+    }, 160);
+  }
+
+  // ════════════════════════════════════════════════
+  // MODAL
+  // ════════════════════════════════════════════════
+  function openModal(tab) {
+    document.getElementById('modalOverlay').classList.add('open');
+    switchTab(tab);
+  }
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+  function overlayClick(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+  function switchTab(tab) {
+    const isSignup = tab === 'signup';
+    document.getElementById('tabSignup').classList.toggle('active', isSignup);
+    document.getElementById('tabLogin').classList.toggle('active', !isSignup);
+    document.getElementById('formSignup').style.display = isSignup ? 'block' : 'none';
+    document.getElementById('formLogin').style.display = isSignup ? 'none' : 'block';
+    document.getElementById('modalTitle').textContent = isSignup ? 'Crear cuenta' : 'Bienvenido de vuelta';
+    document.getElementById('modalSub').textContent = isSignup
+      ? 'Empieza con el plan gratuito. Sin tarjeta.'
+      : 'Ingresa con tu cuenta de VEGA.';
+  }
+
+  // ════════════════════════════════════════════════
+  // AUTH — Supabase
+  // ════════════════════════════════════════════════
+  async function handleSignup() {
+    const email = document.getElementById('signupEmail').value.trim();
+    const pass  = document.getElementById('signupPassword').value;
+    const errEl = document.getElementById('signupError');
+    const sucEl = document.getElementById('signupSuccess');
+    const btn   = document.getElementById('btnSignup');
+
+    errEl.textContent = ''; sucEl.style.display = 'none';
+
+    if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; return; }
+    if (pass.length < 8) { errEl.textContent = 'La contraseña debe tener mínimo 8 caracteres.'; return; }
+
+    btn.textContent = 'Creando cuenta…'; btn.disabled = true;
+
+    const { error } = await sb.auth.signUp({ email, password: pass });
+
+    btn.textContent = 'Crear cuenta'; btn.disabled = false;
+
+    if (error) {
+      errEl.textContent = error.message;
+    } else {
+      sucEl.textContent = '✓ Revisa tu correo para confirmar tu cuenta.';
+      sucEl.style.display = 'block';
+    }
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    const btn   = document.getElementById('btnLogin');
+
+    errEl.textContent = '';
+
+    if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; return; }
+
+    btn.textContent = 'Ingresando…'; btn.disabled = true;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+    btn.textContent = 'Iniciar sesión'; btn.disabled = false;
+
+    if (error) {
+      errEl.textContent = error.message;
+    } else {
+      closeModal();
+      updateNavUser(data.user);
+    }
+  }
+
+  async function handleLogout() {
+    await sb.auth.signOut();
+    updateNavGuest();
+  }
+
+  function updateNavUser(user) {
+    document.getElementById('navActions').innerHTML = `
+      <div class="user-chip"><div class="user-dot"></div>${user.email}</div>
+      <button class="btn btn-ghost" onclick="handleLogout()">Salir</button>
+    `;
+  }
+
+  function updateNavGuest() {
+    document.getElementById('navActions').innerHTML = `
+      <button class="btn btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
+      <button class="btn btn-primary" onclick="openModal('signup')">Comenzar gratis</button>
+    `;
+  }
+
+  // ════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════
+  renderPersonas();
+
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session?.user) updateNavUser(data.session.user);
+  });
+
+  sb.auth.onAuthStateChange((_, session) => {
+    if (session?.user) updateNavUser(session.user); else updateNavGuest();
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
