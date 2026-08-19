@@ -371,9 +371,21 @@
   footer{
     text-align:center; padding:26px; font-size:10.5px; color:var(--bp-line-dim); letter-spacing:.06em; position:relative; z-index:1;
   }
+
+  /* Auth loading overlay (mientras revisamos si ya hay sesión) */
+  .boot-check{
+    position:fixed; inset:0; z-index:9999; background:var(--bp-navy);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Roboto Mono',monospace; font-size:11px; color:var(--bp-line); letter-spacing:.1em;
+    transition:opacity .25s ease;
+  }
+  .boot-check.hide{ opacity:0; pointer-events:none; }
 </style>
 </head>
 <body>
+
+<!-- Pantalla breve mientras verificamos si ya hay sesión activa -->
+<div class="boot-check" id="bootCheck">VERIFICANDO SESIÓN…</div>
 
 <!-- ============ NAV ============ -->
 <nav class="topnav" id="topnav">
@@ -769,6 +781,25 @@
   const SUPABASE_ANON_KEY = 'sb_publishable_JeuRUKVRllEX5SG9K17NDQ_FUfNe4X2';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // A dónde vamos después de loguearnos con éxito.
+  const MAIN_APP_URL = 'app.html';
+
+  const bootCheck = document.getElementById('bootCheck');
+
+  // ---- Si ya hay sesión activa al cargar la landing, saltar directo al Studio ----
+  (async () => {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        window.location.href = MAIN_APP_URL;
+        return; // no ocultamos bootCheck: ya estamos navegando fuera
+      }
+    } catch (e) {
+      // si algo falla verificando sesión, seguimos mostrando la landing normal
+    }
+    bootCheck.classList.add('hide');
+  })();
+
   const revealEls = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); } });
@@ -858,22 +889,38 @@
       });
     }
 
-    authSubmit.disabled = false;
-    authSubmit.textContent = currentAuthMode === 'login' ? 'Entrar' : 'Crear cuenta';
-
     if(result.error){
+      authSubmit.disabled = false;
+      authSubmit.textContent = currentAuthMode === 'login' ? 'Entrar' : 'Crear cuenta';
       authError.textContent = result.error.message;
       authError.style.display = 'block';
       return;
     }
 
-    closeAuth();
+    // Éxito: si ya hay sesión (login siempre, signup si no requiere confirmación
+    // de correo), pasamos directo al Studio. Si signUp pide confirmar correo,
+    // result.data.session viene null y avisamos en vez de redirigir a ciegas.
+    if (result.data?.session) {
+      window.location.href = MAIN_APP_URL;
+      return;
+    }
+
+    authSubmit.disabled = false;
+    authSubmit.textContent = currentAuthMode === 'login' ? 'Entrar' : 'Crear cuenta';
+
+    if (currentAuthMode === 'signup') {
+      authError.textContent = 'Cuenta creada. Revisa tu correo para confirmar antes de entrar.';
+      authError.style.display = 'block';
+    } else {
+      closeAuth();
+    }
   }
 
-  // ---- Keep UI in sync with session state ----
+  // ---- Mantener la UI sincronizada con el estado de sesión ----
   sb.auth.onAuthStateChange((event, session) => {
-    // Aquí puedes actualizar el nav (mostrar "Mi cuenta" en vez de "Iniciar sesión")
-    // cuando haya una sesión activa. Se deja listo para ampliar.
+    if (event === 'SIGNED_IN' && session) {
+      window.location.href = MAIN_APP_URL;
+    }
   });
 </script>
 </body>
