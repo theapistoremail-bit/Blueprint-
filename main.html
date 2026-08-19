@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code&family=Roboto:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bp-navy:#0B2D4E; --bp-navy-deep:#071B30; --bp-line:#8FD8FF; --bp-line-dim:#3E6E93;
@@ -152,6 +153,8 @@
     transition:transform .15s;
   }
   .auth-submit:hover{transform:translateY(-1px);}
+  .auth-submit:disabled{opacity:.6; cursor:default; transform:none;}
+  .auth-error{display:none; color:#F28B82; font-size:11px; margin-bottom:10px; position:relative; z-index:1; line-height:1.5;}
   .auth-foot{font-size:11px; color:#5D95B5; text-align:center; margin-top:16px; position:relative; z-index:1;}
   .auth-foot a{color:var(--bp-line); text-decoration:underline; cursor:pointer;}
 
@@ -743,7 +746,7 @@
     </div>
     <div class="auth-field">
       <label>Contraseña</label>
-      <input type="password" placeholder="••••••••" />
+      <input type="password" id="authPassword" placeholder="••••••••" />
     </div>
 
     <div class="auth-plan-row" id="authPlanRow" style="display:none;">
@@ -752,13 +755,20 @@
       <div class="auth-plan-pill" data-plan="taller" onclick="pickPlan(this)">Taller</div>
     </div>
 
-    <button class="auth-submit" id="authSubmit" onclick="closeAuth()">Entrar</button>
+    <div class="auth-error" id="authError"></div>
+
+    <button class="auth-submit" id="authSubmit" onclick="handleAuthSubmit()">Entrar</button>
     <div class="auth-foot" id="authFoot">¿No tienes cuenta? <a onclick="switchAuthTab('signup')">Créala aquí</a></div>
   </div>
 </div>
 
 
 <script>
+  // ---- Supabase client ----
+  const SUPABASE_URL = 'https://zfbsoadyqsmkovknohly.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_JeuRUKVRllEX5SG9K17NDQ_FUfNe4X2';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   const revealEls = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); } });
@@ -785,8 +795,11 @@
   const authSubmit = document.getElementById('authSubmit');
   const authFoot = document.getElementById('authFoot');
   const authEmail = document.getElementById('authEmail');
+  const authError = document.getElementById('authError');
+  let currentAuthMode = 'login';
 
   function switchAuthTab(mode){
+    currentAuthMode = mode;
     const isLogin = mode === 'login';
     tabLogin.classList.toggle('active', isLogin);
     tabSignup.classList.toggle('active', !isLogin);
@@ -799,6 +812,7 @@
     authFoot.innerHTML = isLogin
       ? '¿No tienes cuenta? <a onclick="switchAuthTab(\'signup\')">Créala aquí</a>'
       : '¿Ya tienes cuenta? <a onclick="switchAuthTab(\'login\')">Inicia sesión</a>';
+    authError.style.display = 'none';
   }
 
   function pickPlan(el){
@@ -817,6 +831,50 @@
     document.body.style.overflow = '';
   }
   document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeAuth(); });
+
+  // ---- Auth submit (Supabase) ----
+  async function handleAuthSubmit(){
+    const email = authEmail.value.trim();
+    const password = document.getElementById('authPassword').value;
+    authError.style.display = 'none';
+
+    if(!email || !password){
+      authError.textContent = 'Completa correo y contraseña.';
+      authError.style.display = 'block';
+      return;
+    }
+
+    authSubmit.disabled = true;
+    authSubmit.textContent = currentAuthMode === 'login' ? 'Entrando...' : 'Creando...';
+
+    let result;
+    if(currentAuthMode === 'login'){
+      result = await sb.auth.signInWithPassword({ email, password });
+    } else {
+      const plan = document.querySelector('.auth-plan-pill.active')?.dataset.plan || 'boceto';
+      result = await sb.auth.signUp({
+        email, password,
+        options: { data: { plan } }
+      });
+    }
+
+    authSubmit.disabled = false;
+    authSubmit.textContent = currentAuthMode === 'login' ? 'Entrar' : 'Crear cuenta';
+
+    if(result.error){
+      authError.textContent = result.error.message;
+      authError.style.display = 'block';
+      return;
+    }
+
+    closeAuth();
+  }
+
+  // ---- Keep UI in sync with session state ----
+  sb.auth.onAuthStateChange((event, session) => {
+    // Aquí puedes actualizar el nav (mostrar "Mi cuenta" en vez de "Iniciar sesión")
+    // cuando haya una sesión activa. Se deja listo para ampliar.
+  });
 </script>
 </body>
 </html>
