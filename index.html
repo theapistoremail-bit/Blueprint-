@@ -1,834 +1,880 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VEGA — Inteligencia que te entiende</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blueprint Studio — Dale una mente antes que una tarea</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code&family=Roboto:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bp-navy:#0B2D4E; --bp-navy-deep:#071B30; --bp-line:#8FD8FF; --bp-line-dim:#3E6E93;
+    --bp-white:#EAF6FF;
+    --paper:#F3F5FA; --ink:#1F2430; --muted:#7A8291; --hair:#E7EBF2;
+    --accent:#1A73E8; --accent-soft:#E8F0FE;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth; scroll-padding-top:76px;}
+  body{
+    font-family:'Roboto',ui-sans-serif,system-ui,sans-serif;
+    color:var(--ink); background:var(--paper);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    padding-top:64px;
+  }
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* ============ NAV ============ */
+  .topnav{
+    position:fixed; top:0; left:0; right:0; height:64px; z-index:200;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; background:rgba(7,27,48,.78); backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(143,216,255,.22);
+    transition:background .25s, border-color .25s;
+  }
+  .topnav.solid{ background:rgba(7,27,48,.94); }
+  .topnav .brandmark{cursor:pointer;}
+  .topnav .brandmark span{color:var(--bp-white);}
+  .nav-links{
+    display:flex; align-items:center; gap:32px;
+    list-style:none;
+  }
+  .nav-links a{
+    font-size:12.5px; color:#B9D9EC; text-decoration:none; letter-spacing:.03em;
+    position:relative; padding-bottom:4px; transition:color .15s;
+  }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--bp-line);
+    transition:width .2s;
+  }
+  .nav-links a:hover{color:var(--bp-white);}
+  .nav-links a:hover::after{width:100%;}
+  .nav-right{display:flex; align-items:center; gap:20px;}
+  .nav-auth{
+    font-size:12px; color:#B9D9EC; text-decoration:none; letter-spacing:.02em;
+    white-space:nowrap; transition:color .15s;
+  }
+  .nav-auth:hover{color:var(--bp-white);}
+  .nav-cta{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 18px; border-radius:999px; background:var(--bp-line); color:var(--bp-navy-deep);
+    font-weight:700; font-size:11.5px; text-decoration:none; border:none; cursor:pointer;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .nav-cta:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(143,216,255,.28);}
+  .nav-burger{display:none; background:none; border:none; cursor:pointer; padding:6px;}
+  .nav-burger svg{stroke:var(--bp-white);}
 
-    :root {
-      --bg: #080810;
-      --surface: #10101C;
-      --surface-2: #181828;
-      --text: #EEEAF8;
-      --text-muted: #6A6480;
-      --border: rgba(255,255,255,0.07);
-      --active-color: #6C63FF;
-      --active-color-alt: #9B93FF;
-      --active-rgb: 108, 99, 255;
-      --active-shadow: rgba(108, 99, 255, 0.35);
-      --radius: 16px;
-      --trans: 0.5s cubic-bezier(0.4,0,0.2,1);
+  @media (max-width:820px){
+    .nav-links{
+      position:fixed; top:64px; left:0; right:0; background:rgba(7,27,48,.97);
+      flex-direction:column; align-items:flex-start; gap:0; padding:8px 0;
+      border-bottom:1px solid rgba(143,216,255,.22);
+      transform:translateY(-8px); opacity:0; pointer-events:none; transition:all .2s;
     }
+    .nav-links.open{transform:translateY(0); opacity:1; pointer-events:all;}
+    .nav-links a{width:100%; padding:14px 28px; box-sizing:border-box;}
+    .nav-links a::after{display:none;}
+    .nav-burger{display:flex;}
+    .nav-auth{display:none;}
+  }
 
-    html { scroll-behavior: smooth; }
+  /* ============ PLANS ============ */
+  .plans-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .plan-card{
+    background:#fff; border:1px solid var(--hair); border-radius:20px; padding:26px 24px;
+    display:flex; flex-direction:column; gap:14px; position:relative;
+    transition:transform .18s, box-shadow .18s, border-color .18s;
+  }
+  .plan-card:hover{transform:translateY(-4px); box-shadow:0 14px 32px rgba(60,64,67,.10); border-color:#C7D2E6;}
+  .plan-card.featured{border-color:var(--accent); box-shadow:0 4px 20px rgba(26,115,232,.14);}
+  .plan-tag{
+    font-family:'Roboto Mono',monospace; font-size:9.5px; letter-spacing:.1em; color:var(--muted);
+    text-transform:uppercase;
+  }
+  .plan-name{font-size:18px; font-weight:700;}
+  .plan-price{font-size:26px; font-weight:800; display:flex; align-items:baseline; gap:6px;}
+  .plan-price span{font-size:11px; font-weight:500; color:var(--muted);}
+  .plan-feats{list-style:none; display:flex; flex-direction:column; gap:9px; margin-top:4px;}
+  .plan-feats li{font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:flex-start; line-height:1.5;}
+  .plan-feats li svg{flex-shrink:0; margin-top:2px;}
+  .plan-btn{
+    margin-top:auto; text-align:center; padding:11px; border-radius:999px; font-size:12.5px; font-weight:700;
+    cursor:pointer; border:1px solid var(--accent); background:#fff; color:var(--accent); transition:all .15s;
+  }
+  .plan-btn.solid{background:var(--accent); color:#fff;}
+  .plan-btn:hover{transform:translateY(-1px);}
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+  /* ============ AUTH MODAL ============ */
+  .auth-overlay{
+    position:fixed; inset:0; background:rgba(7,20,35,.55); backdrop-filter:blur(3px);
+    z-index:500; display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .auth-overlay.open{display:flex;}
+  .auth-card{
+    width:100%; max-width:380px; background:var(--bp-navy); border:1px solid rgba(143,216,255,.3);
+    border-radius:22px; padding:30px 28px; position:relative; overflow:hidden;
+  }
+  .auth-card::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:repeating-linear-gradient(0deg, rgba(143,216,255,.06) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(90deg, rgba(143,216,255,.06) 0 1px, transparent 1px 22px);
+  }
+  .auth-close{
+    position:absolute; top:16px; right:16px; background:none; border:none; cursor:pointer;
+    color:var(--bp-line); z-index:2; padding:4px;
+  }
+  .auth-tabs{display:flex; gap:6px; margin-bottom:22px; position:relative; z-index:1;}
+  .auth-tab{
+    flex:1; text-align:center; padding:9px; font-size:12px; font-weight:600; color:#8FB3CC;
+    border:1px solid rgba(143,216,255,.25); border-radius:999px; cursor:pointer; background:transparent;
+    transition:all .15s;
+  }
+  .auth-tab.active{background:var(--bp-line); color:var(--bp-navy-deep); border-color:var(--bp-line);}
+  .auth-title{font-family:'Google Sans Code','Roboto Mono',monospace; font-size:19px; color:var(--bp-white); margin-bottom:6px; position:relative; z-index:1;}
+  .auth-sub{font-size:12px; color:#8FB3CC; margin-bottom:20px; line-height:1.6; position:relative; z-index:1;}
+  .auth-field{margin-bottom:14px; position:relative; z-index:1;}
+  .auth-field label{display:block; font-size:10.5px; color:#8FB3CC; letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; font-family:'Roboto Mono',monospace;}
+  .auth-field input{
+    width:100%; padding:11px 13px; border-radius:11px; font-size:13px; color:var(--bp-white);
+    background:rgba(234,246,255,.06); border:1px solid rgba(143,216,255,.3); font-family:'Roboto',sans-serif;
+  }
+  .auth-field input::placeholder{color:#5D95B5;}
+  .auth-field input:focus{outline:none; border-color:var(--bp-line);}
+  .auth-plan-row{display:flex; gap:8px; margin-bottom:18px; position:relative; z-index:1;}
+  .auth-plan-pill{
+    flex:1; text-align:center; padding:8px 4px; font-size:10.5px; border-radius:10px; cursor:pointer;
+    border:1px solid rgba(143,216,255,.3); color:#B9D9EC; font-family:'Roboto Mono',monospace; transition:all .15s;
+  }
+  .auth-plan-pill.active{background:rgba(143,216,255,.15); border-color:var(--bp-line); color:var(--bp-white);}
+  .auth-submit{
+    width:100%; padding:13px; border-radius:999px; background:var(--bp-line); color:var(--bp-navy-deep);
+    font-weight:700; font-size:13px; border:none; cursor:pointer; position:relative; z-index:1;
+    transition:transform .15s;
+  }
+  .auth-submit:hover{transform:translateY(-1px);}
+  .auth-submit:disabled{opacity:.6; cursor:default; transform:none;}
+  .auth-error{display:none; color:#F28B82; font-size:11px; margin-bottom:10px; position:relative; z-index:1; line-height:1.5;}
+  .auth-foot{font-size:11px; color:#5D95B5; text-align:center; margin-top:16px; position:relative; z-index:1;}
+  .auth-foot a{color:var(--bp-line); text-decoration:underline; cursor:pointer;}
 
-    /* ─── NAV ─── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 64px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 48px;
-      background: rgba(8,8,16,0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-    }
+  /* ============ SIGNUP INLINE (closing section) ============ */
+  .signup-inline{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;
+  }
+  .signup-inline input{
+    padding:13px 16px; border-radius:999px; border:1px solid rgba(143,216,255,.35);
+    background:rgba(234,246,255,.06); color:var(--bp-white); font-size:13px; min-width:230px;
+  }
+  .signup-inline input::placeholder{color:#5D95B5;}
+  .signup-inline input:focus{outline:none; border-color:var(--bp-line);}
 
-    .nav-logo {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.15rem; font-weight: 500; letter-spacing: 0.18em;
-      color: var(--text); text-decoration: none;
-    }
-    .nav-logo span { color: var(--active-color); transition: color var(--trans); }
+  @media (max-width:640px){ .plans-grid{grid-template-columns:1fr;} }
+  a{color:inherit;}
+  .mono{font-family:'Roboto Mono',monospace;}
+  .disp{font-family:'Google Sans Code','Roboto Mono',monospace;}
 
-    .nav-links { display: flex; gap: 32px; list-style: none; }
-    .nav-links a {
-      font-size: 0.875rem; color: var(--text-muted); text-decoration: none;
-      letter-spacing: 0.02em; transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--text); }
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:#D2D8E4;border-radius:8px;}
 
-    .nav-actions { display: flex; gap: 12px; align-items: center; }
+  /* ============ HERO — BLUEPRINT SHEET ============ */
+  .hero{
+    position:relative; min-height:calc(100svh - 64px); background:var(--bp-navy);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(143,216,255,.10) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgba(143,216,255,.10) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(0deg, rgba(143,216,255,.05) 0 1px, transparent 1px 8.8px),
+      repeating-linear-gradient(90deg, rgba(143,216,255,.05) 0 1px, transparent 1px 8.8px);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(ellipse 90% 60% at 50% 0%, rgba(143,216,255,.14), transparent 60%);
+    pointer-events:none;
+  }
+  .sheet-border{
+    position:absolute; inset:18px; border:1px solid rgba(143,216,255,.35); pointer-events:none;
+  }
+  .sheet-border::before, .sheet-border::after{
+    content:""; position:absolute; width:14px; height:14px; border:1px solid rgba(143,216,255,.55);
+  }
+  .tick{position:absolute; background:rgba(143,216,255,.45);}
 
-    /* ─── BUTTONS ─── */
-    .btn {
-      font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 500;
-      padding: 9px 20px; border-radius: 9px; border: none; cursor: pointer;
-      transition: all 0.2s; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 6px;
-    }
-    .btn-ghost {
-      background: transparent; color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.14); }
+  .hero-top{
+    position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between;
+    padding:34px 46px 0;
+  }
+  .brandmark{display:flex; align-items:center; gap:10px;}
+  .brandmark .box{
+    width:30px;height:30px;border:1.5px solid var(--bp-line); border-radius:7px;
+    display:flex;align-items:center;justify-content:center; color:var(--bp-line);
+  }
+  .brandmark span{
+    font-size:13px; letter-spacing:.14em; color:var(--bp-white); font-weight:600; text-transform:uppercase;
+  }
+  .sheet-id{
+    font-size:10px; color:var(--bp-line-dim); letter-spacing:.08em; text-align:right; line-height:1.7;
+  }
+  .sheet-id b{color:var(--bp-line); font-weight:600;}
 
-    .btn-primary {
-      background: var(--active-color); color: #fff;
-      transition: background var(--trans), box-shadow var(--trans), filter 0.2s;
-    }
-    .btn-primary:hover {
-      box-shadow: 0 0 24px var(--active-shadow); filter: brightness(1.1);
-    }
+  .hero-mid{
+    position:relative; z-index:2; flex:1; display:flex; align-items:center;
+    padding:20px 46px; gap:56px;
+  }
+  .hero-copy{max-width:520px;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:11px; letter-spacing:.18em; color:var(--bp-line); text-transform:uppercase;
+    margin-bottom:22px; font-weight:600;
+  }
+  .eyebrow::before{content:""; width:22px; height:1px; background:var(--bp-line);}
+  h1{
+    font-family:'Google Sans Code','Roboto Mono',monospace;
+    font-size:clamp(30px,4.6vw,52px); line-height:1.12; color:var(--bp-white);
+    letter-spacing:-.01em; font-weight:400; margin-bottom:20px;
+  }
+  h1 em{font-style:normal; color:var(--bp-line);}
+  .hero-sub{
+    font-size:15px; line-height:1.75; color:#B9D9EC; max-width:460px; margin-bottom:32px;
+  }
+  .hero-actions{display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+  .btn-primary{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:14px 28px; border-radius:999px; background:var(--bp-line); color:var(--bp-navy-deep);
+    font-weight:700; font-size:13px; text-decoration:none; border:none; cursor:pointer;
+    transition:transform .18s, box-shadow .18s; box-shadow:0 8px 24px rgba(143,216,255,.18);
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(143,216,255,.28);}
+  .btn-ghost{
+    font-size:12px; color:var(--bp-line); text-decoration:none; letter-spacing:.03em;
+    border-bottom:1px solid rgba(143,216,255,.4); padding-bottom:2px;
+  }
 
-    /* ─── HERO ─── */
-    .hero {
-      min-height: 100vh;
-      display: grid; grid-template-columns: 1fr 1fr;
-      align-items: center; padding: 0 48px; padding-top: 64px; gap: 48px;
-      max-width: 1240px; margin: 0 auto;
-    }
+  /* schematic */
+  .schematic{flex:1; min-width:0; display:flex; align-items:center; justify-content:center;}
+  .schematic svg{width:100%; height:auto; max-width:560px; overflow:visible;}
+  .wire{fill:none; stroke:var(--bp-line); stroke-width:1.6; stroke-dasharray:600; stroke-dashoffset:600; animation:draw 1.8s ease forwards;}
+  .wire.w2{animation-delay:.25s;} .wire.w3{animation-delay:.5s;} .wire.w4{animation-delay:.75s;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  .node-box{fill:rgba(143,216,255,.05); stroke:rgba(143,216,255,.55); stroke-width:1.3; rx:9;}
+  .node-head{fill:rgba(143,216,255,.10); stroke:rgba(143,216,255,.3); stroke-width:1;}
+  .port{fill:var(--bp-navy); stroke:var(--bp-line); stroke-width:1.6;}
+  .node-label{font-family:'Roboto Mono',monospace; font-size:8.5px; fill:var(--bp-line); letter-spacing:.02em;}
+  .node-tag{font-family:'Roboto Mono',monospace; font-size:7px; fill:#5D95B5; letter-spacing:.04em;}
+  .leader{stroke:rgba(143,216,255,.35); stroke-width:1; stroke-dasharray:2 3;}
+  .fadeGroup{opacity:0; animation:fadeIn .9s ease forwards; animation-delay:1.3s;}
+  @keyframes fadeIn{to{opacity:1;}}
 
-    .hero-content { padding: 48px 0; }
+  .hero-bottom{
+    position:relative; z-index:2; display:flex; align-items:flex-end; justify-content:space-between;
+    padding:0 46px 34px; gap:20px; flex-wrap:wrap;
+  }
+  .stamp{
+    border:1px solid var(--bp-line); border-radius:6px; padding:10px 16px;
+    font-size:9.5px; color:var(--bp-line); letter-spacing:.1em; text-transform:uppercase;
+    display:flex; gap:22px;
+  }
+  .stamp div b{display:block; font-size:13px; color:var(--bp-white); letter-spacing:0; margin-top:3px; font-weight:600;}
+  .scroll-cue{font-size:10px; color:var(--bp-line-dim); letter-spacing:.14em; text-transform:uppercase; writing-mode:vertical-rl;}
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em;
-      color: var(--active-color);
-      border: 1px solid rgba(var(--active-rgb), 0.3);
-      padding: 6px 14px; border-radius: 100px; margin-bottom: 32px;
-      transition: color var(--trans), border-color var(--trans);
-    }
-    .badge-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--active-color);
-      animation: blink 2s ease infinite;
-      transition: background var(--trans);
-    }
-    @keyframes blink {
-      0%,100%{opacity:1} 50%{opacity:0.25}
-    }
+  /* ============ SECTIONS ON PAPER ============ */
+  section{padding:96px 46px;}
+  .section-inner{max-width:1120px; margin:0 auto;}
+  .section-head{max-width:620px; margin-bottom:52px;}
+  .section-eyebrow{
+    font-family:'Roboto Mono',monospace; font-size:10.5px; letter-spacing:.16em; color:var(--accent);
+    text-transform:uppercase; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .section-eyebrow::before{content:""; width:16px; height:1px; background:var(--accent);}
+  h2{font-size:clamp(24px,3vw,32px); font-weight:700; letter-spacing:-.01em; margin-bottom:14px;}
+  .section-sub{font-size:14.5px; color:var(--muted); line-height:1.75;}
 
-    h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(2.6rem, 5vw, 4.2rem); font-weight: 700;
-      line-height: 1.07; letter-spacing: -0.025em; margin-bottom: 20px;
-    }
-    h1 .accent { color: var(--active-color); transition: color var(--trans); }
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.show{opacity:1; transform:none;}
 
-    .hero-sub {
-      font-size: 1.05rem; color: var(--text-muted); line-height: 1.75;
-      margin-bottom: 36px; max-width: 440px;
-    }
+  /* Persona strip */
+  .persona-scroll{display:flex; gap:16px; overflow-x:auto; padding-bottom:10px; margin:0 -4px;}
+  .persona-scroll::-webkit-scrollbar{height:6px;}
+  .p-card{
+    flex:0 0 220px; background:#fff; border:1px solid var(--hair); border-radius:18px;
+    padding:20px 18px; box-shadow:0 1px 2px rgba(60,64,67,.05);
+    transition:transform .18s, box-shadow .18s, border-color .18s;
+  }
+  .p-card:hover{transform:translateY(-4px); box-shadow:0 12px 28px rgba(60,64,67,.12); border-color:#C7D2E6;}
+  .p-avatar{width:42px;height:42px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;}
+  .p-name{font-size:13.5px; font-weight:700; margin-bottom:4px;}
+  .p-tag{display:inline-block; font-size:9.5px; font-weight:600; padding:2px 9px; border-radius:999px; margin-bottom:9px;}
+  .p-desc{font-size:11.5px; color:var(--muted); line-height:1.6;}
+  .persona-more{
+    font-size:12px; color:var(--muted); margin-top:18px; display:flex; align-items:center; gap:6px;
+  }
+  .persona-more b{color:var(--accent); font-weight:600;}
 
-    .hero-quote {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
-      color: var(--active-color-alt);
-      border-left: 2px solid var(--active-color);
-      padding: 10px 16px; margin-bottom: 36px;
-      opacity: 0; transform: translateY(8px);
-      transition: opacity 0.4s, transform 0.4s, border-color var(--trans), color var(--trans);
-      min-height: 44px;
-    }
-    .hero-quote.visible { opacity: 1; transform: translateY(0); }
+  /* Node chain */
+  .chain{display:flex; align-items:center; gap:0; overflow-x:auto; padding:20px 4px 30px;}
+  .chain-node{
+    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:10px; width:112px; text-align:center;
+  }
+  .chain-node .ic{
+    width:46px;height:46px;border-radius:13px; background:#fff; border:1px solid var(--hair);
+    display:flex;align-items:center;justify-content:center; box-shadow:0 1px 2px rgba(60,64,67,.05);
+  }
+  .chain-node span{font-size:10.5px; color:var(--ink); font-weight:600;}
+  .chain-arrow{flex:0 0 34px; height:1px; background:repeating-linear-gradient(90deg, #C7D2E6 0 6px, transparent 6px 10px); position:relative; top:-13px;}
 
-    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .providers{
+    display:flex; flex-wrap:wrap; gap:9px; margin-top:26px;
+  }
+  .prov-pill{
+    font-family:'Roboto Mono',monospace; font-size:10.5px; color:var(--muted);
+    border:1px solid var(--hair); border-radius:999px; padding:6px 13px; background:#fff;
+  }
 
-    /* ─── ORB ─── */
-    .hero-visual {
-      display: flex; justify-content: center; align-items: center;
-      position: relative; height: 520px;
-    }
+  /* Ethics feature */
+  .ethic-grid{display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;}
+  .ethic-visual{
+    background:var(--bp-navy); border-radius:22px; padding:34px; position:relative; overflow:hidden;
+    min-height:280px; display:flex; flex-direction:column; justify-content:center; gap:16px;
+  }
+  .ethic-visual::before{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(0deg, rgba(143,216,255,.08) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(90deg, rgba(143,216,255,.08) 0 1px, transparent 1px 22px);
+  }
+  .ethic-line{position:relative; z-index:1; display:flex; align-items:center; gap:12px; font-family:'Roboto Mono',monospace; font-size:12px; color:var(--bp-white);}
+  .ethic-line .dot{width:7px;height:7px;border-radius:50%; background:var(--bp-line); flex-shrink:0;}
+  .ethic-copy h2{margin-bottom:16px;}
+  .ethic-copy p{font-size:14px; line-height:1.8; color:var(--muted); margin-bottom:14px;}
 
-    .orb-wrapper {
-      position: relative; display: flex;
-      align-items: center; justify-content: center;
-    }
+  @media (max-width:860px){
+    .hero-mid{flex-direction:column; gap:30px; padding:10px 26px 30px;}
+    .hero-top, .hero-bottom{padding-left:26px; padding-right:26px;}
+    .ethic-grid{grid-template-columns:1fr;}
+    section{padding:70px 24px;}
+  }
 
-    .orb {
-      width: 220px; height: 220px; border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, var(--active-color-alt), var(--active-color) 55%, transparent 80%);
-      box-shadow: 0 0 80px var(--active-shadow), 0 0 160px rgba(var(--active-rgb),0.08);
-      animation: float 4s ease-in-out infinite;
-      transition: background var(--trans), box-shadow var(--trans);
-      position: relative; z-index: 2;
-    }
-    .orb::after {
-      content: ''; position: absolute; inset: -2px; border-radius: 50%;
-      background: inherit; filter: blur(18px); opacity: 0.35; z-index: -1;
-    }
-    @keyframes float {
-      0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)}
-    }
-
-    .orb-ring {
-      position: absolute; border-radius: 50%;
-      border: 1px solid rgba(var(--active-rgb), 0.18);
-      transition: border-color var(--trans);
-    }
-    .ring-1 { width: 300px; height: 300px; animation: spin 14s linear infinite; }
-    .ring-2 { width: 390px; height: 390px; animation: spin 22s linear infinite reverse; border-style: dashed; border-color: rgba(var(--active-rgb), 0.08); }
-    @keyframes spin { to{transform:rotate(360deg)} }
-
-    .persona-label {
-      position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.22em;
-      color: var(--active-color); opacity: 0.6; white-space: nowrap;
-      transition: color var(--trans);
-    }
-
-    .waveform {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 4px; align-items: flex-end; height: 32px;
-    }
-    .bar {
-      width: 3px; border-radius: 2px;
-      background: var(--active-color); opacity: 0.45;
-      transition: background var(--trans);
-      animation: wavebar 1.2s ease-in-out infinite alternate;
-    }
-    .bar:nth-child(1){height:8px;animation-delay:0s}
-    .bar:nth-child(2){height:18px;animation-delay:.1s}
-    .bar:nth-child(3){height:28px;animation-delay:.2s}
-    .bar:nth-child(4){height:14px;animation-delay:.3s}
-    .bar:nth-child(5){height:22px;animation-delay:.15s}
-    .bar:nth-child(6){height:10px;animation-delay:.25s}
-    .bar:nth-child(7){height:20px;animation-delay:.05s}
-    .bar:nth-child(8){height:6px;animation-delay:.35s}
-    @keyframes wavebar { from{transform:scaleY(0.25)} to{transform:scaleY(1)} }
-
-    /* ─── SECTIONS ─── */
-    section {
-      padding: 100px 48px;
-      max-width: 1240px; margin: 0 auto;
-    }
-
-    .eyebrow {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
-      letter-spacing: 0.22em; text-transform: uppercase;
-      color: var(--active-color); margin-bottom: 12px;
-      transition: color var(--trans);
-    }
-    .section-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 700;
-      letter-spacing: -0.02em; margin-bottom: 14px;
-    }
-    .section-sub {
-      font-size: 1rem; color: var(--text-muted); max-width: 480px;
-      line-height: 1.75; margin-bottom: 56px;
-    }
-
-    /* ─── PERSONALITIES ─── */
-    .personas-grid {
-      display: grid; grid-template-columns: repeat(5,1fr); gap: 14px;
-    }
-
-    .persona-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px 18px; cursor: pointer;
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-      position: relative; overflow: hidden;
-    }
-    .persona-card::before {
-      content: ''; position: absolute;
-      top: 0; left: 0; right: 0; height: 2px;
-      background: var(--p-color); opacity: 0; transition: opacity 0.25s;
-    }
-    .persona-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-5px); }
-    .persona-card.active { border-color: var(--p-color); }
-    .persona-card.active::before { opacity: 1; }
-
-    .persona-icon {
-      font-size: 1.5rem; margin-bottom: 14px;
-      transition: transform 0.3s;
-    }
-    .persona-card:hover .persona-icon { transform: scale(1.15); }
-
-    .persona-name {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-      font-weight: 500; letter-spacing: 0.16em;
-      color: var(--p-color); margin-bottom: 6px;
-    }
-    .persona-tagline {
-      font-size: 0.78rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px;
-    }
-    .persona-trait {
-      display: inline-block; font-size: 0.68rem;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border); padding: 3px 10px;
-      border-radius: 100px; color: var(--text-muted);
-    }
-
-    /* ─── PRICING ─── */
-    #precios { border-top: 1px solid var(--border); }
-
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
-    }
-
-    .plan-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 32px 28px;
-      position: relative; transition: transform 0.25s, box-shadow 0.25s;
-    }
-    .plan-card:hover { transform: translateY(-5px); }
-
-    .plan-card.featured {
-      border-color: var(--active-color);
-      box-shadow: 0 0 48px var(--active-shadow);
-    }
-    .plan-card.featured::after {
-      content: 'MÁS POPULAR';
-      position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
-      font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em;
-      background: var(--active-color); color: #fff;
-      padding: 4px 14px; border-radius: 0 0 8px 8px;
-      transition: background var(--trans);
-    }
-
-    .plan-name {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
-      letter-spacing: 0.2em; color: var(--text-muted); margin-bottom: 10px;
-    }
-    .plan-price {
-      font-family: 'Space Grotesk', sans-serif; font-size: 2.6rem;
-      font-weight: 700; line-height: 1; margin-bottom: 4px;
-    }
-    .plan-price sup { font-size: 1rem; vertical-align: super; font-weight: 400; color: var(--text-muted); }
-    .plan-period { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 24px; }
-
-    hr.plan-divider { border: none; border-top: 1px solid var(--border); margin-bottom: 22px; }
-
-    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
-    .plan-features li {
-      font-size: 0.85rem; color: var(--text-muted);
-      display: flex; align-items: flex-start; gap: 10px; line-height: 1.45;
-    }
-    .plan-features li::before {
-      content: '✓'; color: var(--active-color); font-size: 0.72rem;
-      margin-top: 2px; flex-shrink: 0; transition: color var(--trans);
-    }
-    .plan-features li.off { opacity: 0.35; }
-    .plan-features li.off::before { content: '—'; }
-
-    .btn-plan { width: 100%; padding: 12px; justify-content: center; font-size: 0.88rem; }
-
-    /* ─── MODAL ─── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.78); backdrop-filter: blur(10px);
-      z-index: 200; display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-    .modal {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 40px; width: 100%; max-width: 420px;
-      position: relative; transform: translateY(18px); transition: transform 0.3s;
-    }
-    .modal-overlay.open .modal { transform: translateY(0); }
-
-    .modal-close {
-      position: absolute; top: 16px; right: 16px;
-      background: none; border: none; color: var(--text-muted); font-size: 1rem;
-      cursor: pointer; width: 32px; height: 32px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 8px; transition: background 0.2s, color 0.2s;
-    }
-    .modal-close:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-
-    .modal-logo {
-      font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.18em;
-      color: var(--active-color); margin-bottom: 8px; transition: color var(--trans);
-    }
-    .modal-title {
-      font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 6px;
-    }
-    .modal-sub { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 26px; }
-
-    .modal-tabs {
-      display: flex; background: var(--bg); border-radius: 10px;
-      padding: 4px; margin-bottom: 22px;
-    }
-    .tab-btn {
-      flex: 1; padding: 8px; border: none; background: none;
-      color: var(--text-muted); font-size: 0.875rem; font-family: 'Inter', sans-serif;
-      font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-    }
-    .tab-btn.active { background: var(--surface-2); color: var(--text); }
-
-    .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
-    .form-input {
-      width: 100%; padding: 11px 14px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 9px; color: var(--text); font-size: 0.875rem;
-      font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;
-    }
-    .form-input:focus { border-color: var(--active-color); }
-    .form-input::placeholder { color: var(--text-muted); }
-
-    .form-error { font-size: 0.78rem; color: #FF6B6B; min-height: 18px; margin-bottom: 10px; }
-    .form-success { font-size: 0.82rem; color: #6BFFB8; text-align: center; margin-bottom: 10px; }
-
-    .btn-submit { width: 100%; padding: 12px; justify-content: center; margin-top: 4px; }
-
-    .user-chip {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.78rem; color: var(--text-muted);
-      background: var(--surface); border: 1px solid var(--border);
-      padding: 6px 14px; border-radius: 100px;
-    }
-    .user-dot { width: 6px; height: 6px; border-radius: 50%; background: #6BFFB8; }
-
-    /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 36px 48px;
-      display: flex; align-items: center; justify-content: space-between;
-      max-width: 1240px; margin: 0 auto;
-    }
-    .footer-brand {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.88rem;
-      letter-spacing: 0.15em; color: var(--text-muted);
-    }
-    .footer-brand span { color: var(--active-color); transition: color var(--trans); }
-    .footer-note { font-size: 0.72rem; color: var(--text-muted); opacity: 0.45; }
-
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 960px) {
-      nav { padding: 0 20px; }
-      .nav-links { display: none; }
-
-      .hero {
-        grid-template-columns: 1fr; padding: 80px 24px 48px;
-        text-align: center;
-      }
-      .hero-sub { margin-left: auto; margin-right: auto; }
-      .hero-cta { justify-content: center; }
-      .hero-visual { height: 320px; }
-      .orb { width: 160px; height: 160px; }
-      .ring-1 { width: 220px; height: 220px; }
-      .ring-2 { width: 290px; height: 290px; }
-
-      section { padding: 64px 24px; }
-
-      .personas-grid { grid-template-columns: repeat(2,1fr); }
-      .persona-card:last-child { grid-column: span 2; max-width: 260px; margin: 0 auto; width: 100%; }
-
-      .pricing-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
-
-      footer { flex-direction: column; gap: 10px; padding: 28px 24px; text-align: center; }
-    }
-  </style>
+  /* Closing */
+  .closing{
+    background:var(--bp-navy); position:relative; overflow:hidden;
+    background-image:repeating-linear-gradient(0deg, rgba(143,216,255,.08) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgba(143,216,255,.08) 0 1px, transparent 1px 44px);
+  }
+  .closing .section-inner{text-align:center; display:flex; flex-direction:column; align-items:center;}
+  .closing h2{color:var(--bp-white); font-family:'Google Sans Code','Roboto Mono',monospace; font-weight:400; font-size:clamp(22px,3.4vw,34px);}
+  .closing p{color:#B9D9EC; max-width:460px; margin:16px 0 32px; font-size:14px; line-height:1.75;}
+  .approved{
+    margin-top:44px; display:inline-flex; align-items:center; gap:10px; border:1px solid var(--bp-line);
+    border-radius:999px; padding:8px 18px 8px 8px; font-family:'Roboto Mono',monospace; font-size:10px; color:var(--bp-line); letter-spacing:.08em;
+  }
+  .approved .ok{width:22px;height:22px;border-radius:50%; border:1px solid var(--bp-line); display:flex; align-items:center; justify-content:center;}
+  footer{
+    text-align:center; padding:26px; font-size:10.5px; color:var(--bp-line-dim); letter-spacing:.06em; position:relative; z-index:1;
+  }
+</style>
 </head>
 <body>
 
-<!-- ══ NAV ══ -->
-<nav>
-  <a href="#" class="nav-logo">VE<span>GA</span></a>
-  <ul class="nav-links">
-    <li><a href="#personalidades">Personalidades</a></li>
-    <li><a href="#precios">Precios</a></li>
-    <li><a href="#precios">Docs</a></li>
+<!-- ============ NAV ============ -->
+<nav class="topnav" id="topnav">
+  <div class="brandmark" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <div class="box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+    <span class="mono" style="letter-spacing:.12em;font-size:12.5px;font-weight:600;text-transform:uppercase;">Blueprint Studio</span>
+  </div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#personajes">Personajes</a></li>
+    <li><a href="#nodos">Nodos</a></li>
+    <li><a href="#etica">Ética</a></li>
+    <li><a href="#planes">Planes</a></li>
   </ul>
-  <div class="nav-actions" id="navActions">
-    <button class="btn btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
-    <button class="btn btn-primary" onclick="openModal('signup')">Comenzar gratis</button>
+
+  <div class="nav-right">
+    <a class="nav-auth" href="#" onclick="openAuth('login');return false;">Iniciar sesión</a>
+    <a class="nav-cta" href="#" onclick="openAuth('signup');return false;">Suscribirme</a>
+    <button class="nav-burger" id="navBurger" aria-label="Abrir menú">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
   </div>
 </nav>
 
-<!-- ══ HERO ══ -->
-<div class="hero">
-  <div class="hero-content">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      ASISTENTE ADAPTATIVO · BLUEPRINT STUDIO
-    </div>
-    <h1>Tu asistente.<br><span class="accent">Tu esencia.</span></h1>
-    <p class="hero-sub">VEGA es un asistente de inteligencia artificial que adopta la personalidad que necesitas — controla tu espacio, ejecuta tus flujos de trabajo y te habla como quieres que te hablen.</p>
-    <div class="hero-quote" id="heroQuote">Selecciona una personalidad para ver cómo responde VEGA.</div>
-    <div class="hero-cta">
-      <button class="btn btn-primary" onclick="openModal('signup')">Comenzar gratis</button>
-      <a href="#personalidades" class="btn btn-ghost">Ver personalidades ↓</a>
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="sheet-border"></div>
+  <div class="hero-top" style="justify-content:flex-end;">
+    <div class="sheet-id mono">
+      DIBUJO <b>BS&#8209;01</b> &nbsp;·&nbsp; ESCALA <b>1:1</b><br/>
+      PERSONAJES <b>16</b> &nbsp;·&nbsp; NODOS <b>11</b> &nbsp;·&nbsp; REV <b>A</b>
     </div>
   </div>
-  <div class="hero-visual">
-    <div class="orb-wrapper">
-      <div class="orb-ring ring-2"></div>
-      <div class="orb-ring ring-1"></div>
-      <div class="orb" id="orb"></div>
+
+  <div class="hero-mid">
+    <div class="hero-copy">
+      <div class="eyebrow">Antes de escribir un prompt, elige quién piensa</div>
+      <h1>Todo flujo empieza<br/>como un <em>plano</em>.</h1>
+      <p class="hero-sub">
+        Elige una mente — de Einstein a un Black Hat — y trázale un flujo: texto, búsqueda, código, imagen, audio, video, 3D. Su ética recorre cada nodo que conectes, no solo su estilo de escribir.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#" onclick="openAuth('signup');return false;">
+          Entrar al Studio
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+        <a class="btn-ghost" href="#personajes">Ver las 16 mentes ↓</a>
+      </div>
     </div>
-    <div class="persona-label" id="orbLabel">NINGUNA · SELECCIONADA</div>
-    <div class="waveform">
-      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-      <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-      <div class="bar"></div><div class="bar"></div>
+
+    <div class="schematic">
+      <svg viewBox="0 0 480 300">
+        <!-- wires -->
+        <path class="wire" d="M118 68 C 168 68, 168 68, 210 68" />
+        <path class="wire w2" d="M330 68 L 118 168 C 168 168, 168 168, 210 168" transform="translate(0,0)"/>
+        <path class="wire w2" d="M118 168 C 168 168, 170 168, 210 168" />
+        <path class="wire w3" d="M330 168 C 372 168, 340 238, 380 238" />
+        <path class="wire w3" d="M118 238 C 168 238, 168 238, 210 238" />
+        <path class="wire w4" d="M118 168 C 90 200, 90 210, 118 238" />
+
+        <!-- persona node -->
+        <rect x="20" y="46" width="98" height="44" class="node-box"/>
+        <circle cx="34" cy="68" r="4" class="port"/>
+        <circle cx="118" cy="68" r="4" class="port"/>
+        <text x="46" y="65" class="node-label">EINSTEIN</text>
+        <text x="46" y="76" class="node-tag">PERSONAJE</text>
+
+        <!-- text node -->
+        <rect x="210" y="46" width="98" height="44" class="node-box"/>
+        <circle cx="210" cy="68" r="4" class="port"/>
+        <circle cx="308" cy="68" r="4" class="port"/>
+        <text x="222" y="65" class="node-label">TEXTO</text>
+        <text x="222" y="76" class="node-tag">CLAUDE</text>
+
+        <!-- persona 2 -->
+        <rect x="20" y="146" width="98" height="44" class="node-box"/>
+        <circle cx="34" cy="168" r="4" class="port"/>
+        <circle cx="118" cy="168" r="4" class="port"/>
+        <text x="46" y="165" class="node-label">SHERLOCK</text>
+        <text x="46" y="176" class="node-tag">PERSONAJE</text>
+
+        <!-- image node -->
+        <rect x="210" y="146" width="98" height="44" class="node-box"/>
+        <circle cx="210" cy="168" r="4" class="port"/>
+        <circle cx="308" cy="168" r="4" class="port"/>
+        <text x="222" y="165" class="node-label">IMAGEN</text>
+        <text x="222" y="176" class="node-tag">LEONARDO</text>
+
+        <!-- 3rd persona -->
+        <rect x="20" y="216" width="98" height="44" class="node-box"/>
+        <circle cx="34" cy="238" r="4" class="port"/>
+        <circle cx="118" cy="238" r="4" class="port"/>
+        <text x="46" y="235" class="node-label">WHITE HAT</text>
+        <text x="46" y="246" class="node-tag">PERSONAJE</text>
+
+        <rect x="210" y="216" width="98" height="44" class="node-box"/>
+        <circle cx="210" cy="238" r="4" class="port"/>
+        <circle cx="308" cy="238" r="4" class="port"/>
+        <text x="222" y="235" class="node-label">DEV</text>
+        <text x="222" y="246" class="node-tag">DEEPSEEK</text>
+
+        <!-- publish node -->
+        <rect x="378" y="216" width="90" height="44" class="node-box"/>
+        <circle cx="378" cy="238" r="4" class="port"/>
+        <text x="392" y="235" class="node-label">PUBLICAR</text>
+        <text x="392" y="246" class="node-tag">AYRSHARE</text>
+
+        <g class="fadeGroup">
+          <line class="leader" x1="118" y1="90" x2="118" y2="112"/>
+          <text x="60" y="110" class="node-tag">CADA WIRE = ÉTICA HEREDADA</text>
+        </g>
+      </svg>
     </div>
+  </div>
+
+  <div class="hero-bottom">
+    <div class="stamp">
+      <div>MODO<b>Blueprint</b></div>
+      <div>MOTORES<b>7 APIs</b></div>
+      <div>SALIDA<b>Texto·Img·Audio·Video·3D</b></div>
+    </div>
+    <div class="scroll-cue">DESLIZA</div>
+  </div>
+</section>
+
+<!-- ============ PERSONAS ============ -->
+<section id="personajes">
+  <div class="section-inner reveal">
+    <div class="section-head">
+      <div class="section-eyebrow">01 · Elige una mente</div>
+      <h2>16 perspectivas. Cada una con su propia ética.</h2>
+      <p class="section-sub">El personaje que eliges no es un tono de voz — es la lógica que recorre el flujo entero. Un Estoico descarta lo superfluo antes de generar; un Trickster busca el punto ciego del sistema; un White Hat nunca ataca sin permiso.</p>
+    </div>
+
+    <div class="persona-scroll">
+      <div class="p-card">
+        <div class="p-avatar">🧠</div>
+        <div class="p-name">Albert Einstein</div>
+        <span class="p-tag" style="color:#1A73E8;background:#E8F0FE;">Científico</span>
+        <div class="p-desc">Cuestiona cada supuesto antes de construir sobre él.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">🔍</div>
+        <div class="p-name">Sherlock Holmes</div>
+        <span class="p-tag" style="color:#3C4043;background:#F1F3F4;">Detective</span>
+        <div class="p-desc">Deduce paso a paso hasta la única conclusión posible.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">🃏</div>
+        <div class="p-name">El Trickster</div>
+        <span class="p-tag" style="color:#B06000;background:#FEF7E0;">Disruptor</span>
+        <div class="p-desc">Encuentra el punto ciego del sistema y lo explota con propósito.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">🛡️</div>
+        <div class="p-name">White Hat</div>
+        <span class="p-tag" style="color:#1E8E3E;background:#E6F4EA;">Ético</span>
+        <div class="p-desc">Solo actúa con permiso. La divulgación responsable es sagrada.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">🪨</div>
+        <div class="p-name">El Estoico</div>
+        <span class="p-tag" style="color:#5F6368;background:#F1F3F4;">Filósofo</span>
+        <div class="p-desc">Actúa solo sobre lo que controla. Descarta lo demás.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">🤖</div>
+        <div class="p-name">Tony Stark</div>
+        <span class="p-tag" style="color:#D93025;background:#FCE8E6;">Iron Man</span>
+        <div class="p-desc">Ingeniería elegante, sarcasmo incluido, siempre un plan B.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">🔭</div>
+        <div class="p-name">El Visionario</div>
+        <span class="p-tag" style="color:#00897B;background:#E0F5F2;">Innovador</span>
+        <div class="p-desc">Piensa en órdenes de magnitud, no en incrementos.</div>
+      </div>
+      <div class="p-card">
+        <div class="p-avatar">💀</div>
+        <div class="p-name">Black Hat</div>
+        <span class="p-tag" style="color:#C5221F;background:#FCE8E6;">Sin límites</span>
+        <div class="p-desc">Modela al atacante real para construir mejores defensas.</div>
+      </div>
+    </div>
+    <div class="persona-more">Y ocho más: Maquiavelo, Sun Tzu, Tesla, el Mentor, Hermione, Morpheus, Grey Hat y el Hacktivist — <b>todas dentro del Studio.</b></div>
+  </div>
+</section>
+
+<!-- ============ NODES ============ -->
+<section id="nodos" style="background:#EEF2F9;">
+  <div class="section-inner reveal">
+    <div class="section-head">
+      <div class="section-eyebrow">02 · Conecta el flujo</div>
+      <h2>Once tipos de nodo. Un solo lienzo.</h2>
+      <p class="section-sub">Arrastra un nodo desde el panel, conéctalo por sus puertos y ejecútalo — solo o en cadena. Cada nodo habla con una herramienta real.</p>
+    </div>
+
+    <div class="chain">
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg></div>
+        <span>Texto</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+        <span>Búsqueda</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C6BC0" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg></div>
+        <span>Dev</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A142F4" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>
+        <span>Imagen</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F9AB00" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <span>Audio</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EA4335" stroke-width="2"><path d="m22 8-6 4 6 4V8z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg></div>
+        <span>Video</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+        <span>Objeto 3D</span>
+      </div>
+      <div class="chain-arrow"></div>
+      <div class="chain-node">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D81B60" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg></div>
+        <span>Publicar</span>
+      </div>
+    </div>
+
+    <div class="providers">
+      <span class="prov-pill">Claude</span>
+      <span class="prov-pill">DeepSeek</span>
+      <span class="prov-pill">OpenAI</span>
+      <span class="prov-pill">Leonardo</span>
+      <span class="prov-pill">Stability</span>
+      <span class="prov-pill">Replicate</span>
+      <span class="prov-pill">ElevenLabs</span>
+      <span class="prov-pill">Meshy</span>
+      <span class="prov-pill">Ayrshare</span>
+      <span class="prov-pill">Outlook</span>
+      <span class="prov-pill">WhatsApp / Messenger</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ETHICS FEATURE ============ -->
+<section id="etica">
+  <div class="section-inner reveal">
+    <div class="ethic-grid">
+      <div class="ethic-copy">
+        <div class="section-eyebrow">03 · Por qué importa el personaje</div>
+        <h2>El mismo nodo, dos resultados distintos.</h2>
+        <p>Pídele a Maquiavelo una estrategia de lanzamiento y evaluará poder y consecuencias sin romantizar nada. Pídesela al Mentor y te devolverá preguntas antes que respuestas.</p>
+        <p>No es un filtro de estilo — el <b>system prompt</b> del personaje viaja con cada nodo del flujo, así que el resultado final conserva una sola voz coherente de principio a fin.</p>
+      </div>
+      <div class="ethic-visual">
+        <div class="ethic-line"><span class="dot"></span> personaje.systemPrompt → nodo.contexto</div>
+        <div class="ethic-line"><span class="dot"></span> nodo.contexto → cada API conectada</div>
+        <div class="ethic-line"><span class="dot"></span> salida.tono = ética del personaje</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLANS ============ -->
+<section id="planes" style="background:#EEF2F9;">
+  <div class="section-inner reveal">
+    <div class="section-head">
+      <div class="section-eyebrow">04 · Tu propia forma de interacción</div>
+      <h2>Cada cuenta guarda sus propios personajes y flujos.</h2>
+      <p class="section-sub">Suscríbete y tu selección de personaje, tus nodos guardados y tus llaves de API quedan ligados a tu cuenta — no al navegador. Cada quien construye a su manera.</p>
+    </div>
+
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-tag">Plan A</div>
+        <div class="plan-name">Boceto</div>
+        <div class="plan-price">$0 <span>/ para probar</span></div>
+        <ul class="plan-feats">
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>3 personajes de la galería</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Un flujo activo a la vez</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Nodos de texto e imagen</li>
+        </ul>
+        <div class="plan-btn" onclick="openAuth('signup')">Empezar gratis</div>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-tag">Plan B · Más elegido</div>
+        <div class="plan-name">Plano maestro</div>
+        <div class="plan-price">$249 <span>MXN / mes</span></div>
+        <ul class="plan-feats">
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Las 16 mentes, sin límite</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Flujos ilimitados guardados en tu cuenta</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Los 11 tipos de nodo, todas las APIs</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Tus propias llaves de API, cifradas</li>
+        </ul>
+        <div class="plan-btn solid" onclick="openAuth('signup')">Suscribirme</div>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-tag">Plan C</div>
+        <div class="plan-name">Taller</div>
+        <div class="plan-price">A medida <span>/ equipos</span></div>
+        <ul class="plan-feats">
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Cuentas y flujos compartidos</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Personajes propios del equipo</li>
+          <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E8E3E" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Soporte directo</li>
+        </ul>
+        <div class="plan-btn" onclick="openAuth('signup')">Hablemos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<section class="closing">
+  <div class="section-inner">
+    <h2>El lienzo está en blanco. La mente, por elegir.</h2>
+    <p>Crea tu cuenta, elige una perspectiva y traza tu primer flujo — o entra sin personaje y deja que cada nodo hable con su propia voz por defecto.</p>
+
+    <div class="signup-inline">
+      <input type="email" id="closingEmail" placeholder="tu@correo.com" />
+      <a class="btn-primary" href="#" onclick="openAuth('signup', document.getElementById('closingEmail').value); return false;">
+        Crear cuenta
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <p style="font-size:11px;color:#5D95B5;margin-top:14px;">¿Ya tienes cuenta? <a href="#" onclick="openAuth('login');return false;" style="color:var(--bp-line);text-decoration:underline;">Inicia sesión</a></p>
+
+    <div class="approved">
+      <span class="ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+      APROBADO PARA CONSTRUIR
+    </div>
+  </div>
+  <footer>BLUEPRINT STUDIO · DIBUJADO A MANO, EJECUTADO POR MÁQUINA</footer>
+</section>
+
+<!-- ============ AUTH MODAL ============ -->
+<div class="auth-overlay" id="authOverlay" onclick="if(event.target===this) closeAuth()">
+  <div class="auth-card">
+    <button class="auth-close" onclick="closeAuth()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="auth-tabs">
+      <div class="auth-tab" id="tabLogin" onclick="switchAuthTab('login')">Iniciar sesión</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Crear cuenta</div>
+    </div>
+
+    <div id="authTitleWrap">
+      <div class="auth-title" id="authTitle">Bienvenido de vuelta</div>
+      <p class="auth-sub" id="authSub">Entra para recuperar tus personajes, flujos y llaves guardadas.</p>
+    </div>
+
+    <div class="auth-field">
+      <label>Correo</label>
+      <input type="email" id="authEmail" placeholder="tu@correo.com" />
+    </div>
+    <div class="auth-field">
+      <label>Contraseña</label>
+      <input type="password" id="authPassword" placeholder="••••••••" />
+    </div>
+
+    <div class="auth-plan-row" id="authPlanRow" style="display:none;">
+      <div class="auth-plan-pill active" data-plan="boceto" onclick="pickPlan(this)">Boceto · gratis</div>
+      <div class="auth-plan-pill" data-plan="maestro" onclick="pickPlan(this)">Plano maestro</div>
+      <div class="auth-plan-pill" data-plan="taller" onclick="pickPlan(this)">Taller</div>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <button class="auth-submit" id="authSubmit" onclick="handleAuthSubmit()">Entrar</button>
+    <div class="auth-foot" id="authFoot">¿No tienes cuenta? <a onclick="switchAuthTab('signup')">Créala aquí</a></div>
   </div>
 </div>
 
-<!-- ══ PERSONALIDADES ══ -->
-<section id="personalidades">
-  <div class="eyebrow">Personalidades</div>
-  <h2 class="section-title">Elige cómo quieres que piense</h2>
-  <p class="section-sub">Cada perfil tiene su forma de comunicarse, priorizar y responder. Cambia en cualquier momento — incluso a mitad de una conversación.</p>
-  <div class="personas-grid" id="personasGrid"></div>
-</section>
-
-<!-- ══ PRICING ══ -->
-<section id="precios">
-  <div class="eyebrow">Planes</div>
-  <h2 class="section-title">Simple. Sin sorpresas.</h2>
-  <p class="section-sub">Empieza gratis. Escala cuando lo necesites.</p>
-  <div class="pricing-grid">
-
-    <div class="plan-card">
-      <div class="plan-name">STARTER</div>
-      <div class="plan-price">Gratis</div>
-      <div class="plan-period">Sin tarjeta de crédito</div>
-      <hr class="plan-divider">
-      <ul class="plan-features">
-        <li>1 personalidad activa</li>
-        <li>50 consultas por día</li>
-        <li>Solo texto</li>
-        <li>Blueprint Studio básico</li>
-        <li class="off">Voz bidireccional</li>
-        <li class="off">Control de dispositivos</li>
-      </ul>
-      <button class="btn btn-ghost btn-plan" onclick="openModal('signup')">Crear cuenta gratis</button>
-    </div>
-
-    <div class="plan-card featured">
-      <div class="plan-name">PRO</div>
-      <div class="plan-price"><sup>$</sup>12<sup style="font-size:.9rem;vertical-align:middle">/mo</sup></div>
-      <div class="plan-period">Facturación mensual</div>
-      <hr class="plan-divider">
-      <ul class="plan-features">
-        <li>Todas las personalidades</li>
-        <li>Consultas ilimitadas</li>
-        <li>Voz bidireccional (ElevenLabs)</li>
-        <li>Blueprint Studio completo</li>
-        <li>Respuesta prioritaria</li>
-        <li class="off">Control IoT</li>
-      </ul>
-      <button class="btn btn-primary btn-plan" onclick="openModal('signup')">Comenzar con Pro</button>
-    </div>
-
-    <div class="plan-card">
-      <div class="plan-name">NEXUS</div>
-      <div class="plan-price"><sup>$</sup>29<sup style="font-size:.9rem;vertical-align:middle">/mo</sup></div>
-      <div class="plan-period">Todo incluido</div>
-      <hr class="plan-divider">
-      <ul class="plan-features">
-        <li>Todo lo de Pro</li>
-        <li>Control de dispositivos IoT</li>
-        <li>Personalidad personalizable</li>
-        <li>API de integración propia</li>
-        <li>Hasta 3 espacios inteligentes</li>
-        <li>Soporte prioritario</li>
-      </ul>
-      <button class="btn btn-ghost btn-plan" onclick="openModal('signup')">Activar Nexus</button>
-    </div>
-
-  </div>
-</section>
-
-<footer>
-  <div class="footer-brand">VE<span>GA</span> · Asistente Inteligente</div>
-  <div class="footer-note">Integra con Blueprint Studio · Powered by Claude & ElevenLabs</div>
-</footer>
-
-<!-- ══ AUTH MODAL ══ -->
-<div class="modal-overlay" id="modalOverlay" onclick="overlayClick(event)">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-logo">VEGA</div>
-    <h2 class="modal-title" id="modalTitle">Crear cuenta</h2>
-    <p class="modal-sub" id="modalSub">Empieza con el plan gratuito. Sin tarjeta.</p>
-
-    <div class="modal-tabs">
-      <button class="tab-btn active" id="tabSignup" onclick="switchTab('signup')">Crear cuenta</button>
-      <button class="tab-btn" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</button>
-    </div>
-
-    <!-- SIGNUP -->
-    <div id="formSignup">
-      <div class="form-group">
-        <label class="form-label">Correo electrónico</label>
-        <input class="form-input" type="email" id="signupEmail" placeholder="tu@correo.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input class="form-input" type="password" id="signupPassword" placeholder="Mínimo 8 caracteres">
-      </div>
-      <div class="form-error" id="signupError"></div>
-      <div class="form-success" id="signupSuccess" style="display:none"></div>
-      <button class="btn btn-primary btn-submit" id="btnSignup" onclick="handleSignup()">Crear cuenta</button>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="formLogin" style="display:none">
-      <div class="form-group">
-        <label class="form-label">Correo electrónico</label>
-        <input class="form-input" type="email" id="loginEmail" placeholder="tu@correo.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input class="form-input" type="password" id="loginPassword" placeholder="Tu contraseña">
-      </div>
-      <div class="form-error" id="loginError"></div>
-      <button class="btn btn-primary btn-submit" id="btnLogin" onclick="handleLogin()">Iniciar sesión</button>
-    </div>
-
-  </div>
-</div>
 
 <script>
-  // ════════════════════════════════════════════════
-  // SUPABASE CONFIG
-  // Reemplaza estos valores con los de tu proyecto
-  // en https://supabase.com/dashboard → Settings → API
-  // ════════════════════════════════════════════════
-  const SUPABASE_URL     = 'https://TU_PROYECTO.supabase.co';
-  const SUPABASE_ANON_KEY = 'TU_ANON_KEY_AQUI';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ---- Supabase client ----
+  const SUPABASE_URL = 'https://zfbsoadyqsmkovknohly.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_JeuRUKVRllEX5SG9K17NDQ_FUfNe4X2';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ════════════════════════════════════════════════
-  // PERSONALIDADES
-  // ════════════════════════════════════════════════
-  const personas = [
-    {
-      id: 'cipher',
-      name: 'CIPHER',
-      icon: '⬡',
-      tagline: 'Analítico. Preciso. Sin rodeos.',
-      trait: 'Estrategia & Datos',
-      quote: '"Analicé 3 rutas. La óptima tiene 4 pasos. ¿Empezamos?"',
-      color: '#4FC3F7',
-      colorDark: '#0D3A6A',
-      rgb: '79, 195, 247',
-      shadow: 'rgba(79,195,247,0.32)',
-    },
-    {
-      id: 'solace',
-      name: 'SOLACE',
-      icon: '◎',
-      tagline: 'Cálido. Empático. Siempre presente.',
-      trait: 'Bienestar & Apoyo',
-      quote: '"Entiendo cómo te sientes. Vamos paso a paso, juntos."',
-      color: '#CE93D8',
-      colorDark: '#3D0A5A',
-      rgb: '206, 147, 216',
-      shadow: 'rgba(206,147,216,0.32)',
-    },
-    {
-      id: 'forge',
-      name: 'FORGE',
-      icon: '◈',
-      tagline: 'Implacable. Motivador. Sin excusas.',
-      trait: 'Productividad & Metas',
-      quote: '"3 tareas pendientes. El tiempo corre. Empecemos ahora."',
-      color: '#FFB74D',
-      colorDark: '#7A2800',
-      rgb: '255, 183, 77',
-      shadow: 'rgba(255,183,77,0.32)',
-    },
-    {
-      id: 'echo',
-      name: 'ECHO',
-      icon: '◐',
-      tagline: 'Creativo. Curioso. Fuera del molde.',
-      trait: 'Creatividad & Diseño',
-      quote: '"¿Y si abordamos esto desde un ángulo completamente inesperado?"',
-      color: '#80CBC4',
-      colorDark: '#00332E',
-      rgb: '128, 203, 196',
-      shadow: 'rgba(128,203,196,0.32)',
-    },
-    {
-      id: 'prism',
-      name: 'PRISM',
-      icon: '◇',
-      tagline: 'Juguetón. Veloz. Lleno de ideas.',
-      trait: 'Ideas & Diversión',
-      quote: '"Encontré 7 formas de hacerlo. Solo una explota (creo)."',
-      color: '#F48FB1',
-      colorDark: '#5A0030',
-      rgb: '244, 143, 177',
-      shadow: 'rgba(244,143,177,0.32)',
-    },
-  ];
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
 
-  function renderPersonas() {
-    document.getElementById('personasGrid').innerHTML = personas.map(p => `
-      <div class="persona-card" id="card-${p.id}"
-           style="--p-color:${p.color}"
-           onclick="selectPersona('${p.id}')">
-        <div class="persona-icon">${p.icon}</div>
-        <div class="persona-name">${p.name}</div>
-        <div class="persona-tagline">${p.tagline}</div>
-        <div class="persona-trait">${p.trait}</div>
-      </div>
-    `).join('');
-  }
-
-  function selectPersona(id) {
-    const p = personas.find(x => x.id === id);
-    if (!p) return;
-
-    // Cards
-    document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('active'));
-    document.getElementById('card-' + id).classList.add('active');
-
-    // CSS vars
-    const r = document.documentElement;
-    r.style.setProperty('--active-color', p.color);
-    r.style.setProperty('--active-color-alt', p.colorDark);
-    r.style.setProperty('--active-rgb', p.rgb);
-    r.style.setProperty('--active-shadow', p.shadow);
-
-    // Orb
-    const orb = document.getElementById('orb');
-    orb.style.background = `radial-gradient(circle at 35% 35%, ${p.color}, ${p.colorDark} 60%, transparent 85%)`;
-    orb.style.boxShadow = `0 0 80px ${p.shadow}, 0 0 160px rgba(${p.rgb},0.07)`;
-
-    // Rings
-    document.querySelectorAll('.orb-ring').forEach(r => {
-      r.style.borderColor = `rgba(${p.rgb},0.18)`;
-    });
-
-    // Label
-    document.getElementById('orbLabel').textContent = p.name + ' · ACTIVO';
-
-    // Hero quote
-    const q = document.getElementById('heroQuote');
-    q.classList.remove('visible');
-    setTimeout(() => {
-      q.textContent = p.quote;
-      q.classList.add('visible');
-    }, 160);
-  }
-
-  // ════════════════════════════════════════════════
-  // MODAL
-  // ════════════════════════════════════════════════
-  function openModal(tab) {
-    document.getElementById('modalOverlay').classList.add('open');
-    switchTab(tab);
-  }
-  function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('open');
-  }
-  function overlayClick(e) {
-    if (e.target === document.getElementById('modalOverlay')) closeModal();
-  }
-  function switchTab(tab) {
-    const isSignup = tab === 'signup';
-    document.getElementById('tabSignup').classList.toggle('active', isSignup);
-    document.getElementById('tabLogin').classList.toggle('active', !isSignup);
-    document.getElementById('formSignup').style.display = isSignup ? 'block' : 'none';
-    document.getElementById('formLogin').style.display = isSignup ? 'none' : 'block';
-    document.getElementById('modalTitle').textContent = isSignup ? 'Crear cuenta' : 'Bienvenido de vuelta';
-    document.getElementById('modalSub').textContent = isSignup
-      ? 'Empieza con el plan gratuito. Sin tarjeta.'
-      : 'Ingresa con tu cuenta de VEGA.';
-  }
-
-  // ════════════════════════════════════════════════
-  // AUTH — Supabase
-  // ════════════════════════════════════════════════
-  async function handleSignup() {
-    const email = document.getElementById('signupEmail').value.trim();
-    const pass  = document.getElementById('signupPassword').value;
-    const errEl = document.getElementById('signupError');
-    const sucEl = document.getElementById('signupSuccess');
-    const btn   = document.getElementById('btnSignup');
-
-    errEl.textContent = ''; sucEl.style.display = 'none';
-
-    if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; return; }
-    if (pass.length < 8) { errEl.textContent = 'La contraseña debe tener mínimo 8 caracteres.'; return; }
-
-    btn.textContent = 'Creando cuenta…'; btn.disabled = true;
-
-    const { error } = await sb.auth.signUp({ email, password: pass });
-
-    btn.textContent = 'Crear cuenta'; btn.disabled = false;
-
-    if (error) {
-      errEl.textContent = error.message;
-    } else {
-      sucEl.textContent = '✓ Revisa tu correo para confirmar tu cuenta.';
-      sucEl.style.display = 'block';
-    }
-  }
-
-  async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const pass  = document.getElementById('loginPassword').value;
-    const errEl = document.getElementById('loginError');
-    const btn   = document.getElementById('btnLogin');
-
-    errEl.textContent = '';
-
-    if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; return; }
-
-    btn.textContent = 'Ingresando…'; btn.disabled = true;
-
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-
-    btn.textContent = 'Iniciar sesión'; btn.disabled = false;
-
-    if (error) {
-      errEl.textContent = error.message;
-    } else {
-      closeModal();
-      updateNavUser(data.user);
-    }
-  }
-
-  async function handleLogout() {
-    await sb.auth.signOut();
-    updateNavGuest();
-  }
-
-  function updateNavUser(user) {
-    document.getElementById('navActions').innerHTML = `
-      <div class="user-chip"><div class="user-dot"></div>${user.email}</div>
-      <button class="btn btn-ghost" onclick="handleLogout()">Salir</button>
-    `;
-  }
-
-  function updateNavGuest() {
-    document.getElementById('navActions').innerHTML = `
-      <button class="btn btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
-      <button class="btn btn-primary" onclick="openModal('signup')">Comenzar gratis</button>
-    `;
-  }
-
-  // ════════════════════════════════════════════════
-  // INIT
-  // ════════════════════════════════════════════════
-  renderPersonas();
-
-  sb.auth.getSession().then(({ data }) => {
-    if (data.session?.user) updateNavUser(data.session.user);
+  const topnav = document.getElementById('topnav');
+  window.addEventListener('scroll', () => {
+    topnav.classList.toggle('solid', window.scrollY > 8);
   });
 
-  sb.auth.onAuthStateChange((_, session) => {
-    if (session?.user) updateNavUser(session.user); else updateNavGuest();
-  });
+  const navBurger = document.getElementById('navBurger');
+  const navLinks = document.getElementById('navLinks');
+  navBurger.addEventListener('click', () => navLinks.classList.toggle('open'));
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  // ---- Auth modal ----
+  const authOverlay = document.getElementById('authOverlay');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  const authTitle = document.getElementById('authTitle');
+  const authSub = document.getElementById('authSub');
+  const authPlanRow = document.getElementById('authPlanRow');
+  const authSubmit = document.getElementById('authSubmit');
+  const authFoot = document.getElementById('authFoot');
+  const authEmail = document.getElementById('authEmail');
+  const authError = document.getElementById('authError');
+  let currentAuthMode = 'login';
+
+  function switchAuthTab(mode){
+    currentAuthMode = mode;
+    const isLogin = mode === 'login';
+    tabLogin.classList.toggle('active', isLogin);
+    tabSignup.classList.toggle('active', !isLogin);
+    authTitle.textContent = isLogin ? 'Bienvenido de vuelta' : 'Crea tu Blueprint Studio';
+    authSub.textContent = isLogin
+      ? 'Entra para recuperar tus personajes, flujos y llaves guardadas.'
+      : 'Un plan, una cuenta — tus personajes y flujos te siguen a donde entres.';
+    authPlanRow.style.display = isLogin ? 'none' : 'flex';
+    authSubmit.textContent = isLogin ? 'Entrar' : 'Crear cuenta';
+    authFoot.innerHTML = isLogin
+      ? '¿No tienes cuenta? <a onclick="switchAuthTab(\'signup\')">Créala aquí</a>'
+      : '¿Ya tienes cuenta? <a onclick="switchAuthTab(\'login\')">Inicia sesión</a>';
+    authError.style.display = 'none';
+  }
+
+  function pickPlan(el){
+    authPlanRow.querySelectorAll('.auth-plan-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function openAuth(mode, prefillEmail){
+    authOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    switchAuthTab(mode || 'login');
+    if (prefillEmail) authEmail.value = prefillEmail;
+  }
+  function closeAuth(){
+    authOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeAuth(); });
+
+  // ---- Auth submit (Supabase) ----
+  async function handleAuthSubmit(){
+    const email = authEmail.value.trim();
+    const password = document.getElementById('authPassword').value;
+    authError.style.display = 'none';
+
+    if(!email || !password){
+      authError.textContent = 'Completa correo y contraseña.';
+      authError.style.display = 'block';
+      return;
+    }
+
+    authSubmit.disabled = true;
+    authSubmit.textContent = currentAuthMode === 'login' ? 'Entrando...' : 'Creando...';
+
+    let result;
+    if(currentAuthMode === 'login'){
+      result = await sb.auth.signInWithPassword({ email, password });
+    } else {
+      const plan = document.querySelector('.auth-plan-pill.active')?.dataset.plan || 'boceto';
+      result = await sb.auth.signUp({
+        email, password,
+        options: { data: { plan } }
+      });
+    }
+
+    authSubmit.disabled = false;
+    authSubmit.textContent = currentAuthMode === 'login' ? 'Entrar' : 'Crear cuenta';
+
+    if(result.error){
+      authError.textContent = result.error.message;
+      authError.style.display = 'block';
+      return;
+    }
+
+    closeAuth();
+  }
+
+  // ---- Keep UI in sync with session state ----
+  sb.auth.onAuthStateChange((event, session) => {
+    // Aquí puedes actualizar el nav (mostrar "Mi cuenta" en vez de "Iniciar sesión")
+    // cuando haya una sesión activa. Se deja listo para ampliar.
+  });
 </script>
 </body>
 </html>
