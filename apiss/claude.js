@@ -1,4 +1,4 @@
-// /api/claude.js
+// /apiss/claude.js
 // Proxy hacia la API de Anthropic. La API key nunca llega al navegador:
 // vive únicamente en la variable de entorno CLAUDEAPIKEY de Vercel.
 export default async function handler(req, res) {
