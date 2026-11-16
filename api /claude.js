@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.CLAUDEAPIKEY;
-  if (!apiKey) {
+  if (!CLAUDEAPIKEY) {
     res.status(500).json({ error: "Falta configurar CLAUDEAPIKEY en Vercel" });
     return;
   }
