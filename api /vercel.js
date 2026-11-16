@@ -1,6 +1,4 @@
 {
-  "framework": null,
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" }
-  ]
+  "framework": null
 }
+
